@@ -1,0 +1,13 @@
+/*.jpg
+/*.jpg~
+/*.png
+/*.png~
+/*.bmp
+/*.bmp~
+/*.webm
+/.cache
+/.vscode
+/build
+/test
+/DOCS
+/*.zip
