@@ -18,7 +18,7 @@ int main()
 
     {
     
-        cv::Mat input = cv::imread("../city4.jpg");
+        cv::Mat input = cv::imread("../abbbg.jpg");
         cv::Mat output;
         output.create(input.size(), input.type());
 

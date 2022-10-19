@@ -5,7 +5,6 @@
 #include "opencv2/videoio.hpp"
 #include "shader.h"
 #include "opencv2/core.hpp"
-#include "vk/gpu.h"
 
 #define VIDEO_PATH 0
 
