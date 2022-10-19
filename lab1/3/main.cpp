@@ -26,9 +26,9 @@ int main()
     cv::Mat result;
     result.create(bg.size(), bg.type());
 
-    process(result, [&](glm::vec2 uv) {
-        glm::vec4 fgcol = sample(fg, uv * glm::vec2(2.0f, 1.0f));
-        return glm::mix(sample(bg, uv, SampleUV::Clamp, SamplePoint::Point), fgcol, fgcol.a);
+    process<U8>(result, [&](glm::vec2 uv) {
+        glm::vec4 fgcol = sample<U8>(fg, uv * glm::vec2(2.0f, 1.0f));
+        return glm::mix(sample<U8>(bg, uv, SampleUV::Clamp, SamplePoint::Point), fgcol, fgcol.a);
     });
 
     cv::namedWindow("Input foreground");

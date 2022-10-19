@@ -11,3 +11,5 @@
 
 void markTime();
 void endMark(const char* msg);
+
+#define U8 uint8_t, 255

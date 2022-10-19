@@ -14,27 +14,28 @@ aux_source_directory("./src/vk" VK_HELP_SRC)
 
 add_executable(ImageProcessing ${LAB_PATH} ${SRC} ${VK_HELP_SRC})
 
+include("./libconfig/includeDirs.cmake")
+include("./libconfig/libraryDirs.cmake")
+include("./libconfig/library.cmake")
+
 target_include_directories(
     ImageProcessing
     PRIVATE
-    "C:/OpenCV/opencv/build/include/"
-    "C:/VulkanSDK/1.3.224.1/Include"
     "./include/"
     "./include/vk"
+    ${TPINCDIR}
 )
 
 target_link_directories(
     ImageProcessing
     PRIVATE
-    "C:/OpenCV/opencv/build/x64/vc15/lib/"
-    "C:/VulkanSDK/1.3.224.1/Lib"
+    ${TPLIBDIR}
 )
 
 target_link_libraries(
     ImageProcessing
     PRIVATE
-    opencv_world460d.lib
-    vulkan-1.lib
+    ${TPLIBS}
 )
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})

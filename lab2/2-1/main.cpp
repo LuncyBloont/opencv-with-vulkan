@@ -62,8 +62,8 @@ int main()
         cv::Mat* bgImg = data0->background;
         cv::Mat* fgImg = data0->image;
         auto&& mask = [&](vec2 uv) {
-            vec3 raw = _rgb(sample(*fgImg, uv));
-            vec3 bg = _rgb(sample(*bgImg, uv));
+            vec3 raw = _rgb(sample<U8>(*fgImg, uv));
+            vec3 bg = _rgb(sample<U8>(*bgImg, uv));
             return vec4(
                 mix(vec3(0.0f), vec3(1.0f), sign(max(dot(abs(raw - bg), vec3(1.0f)) / 3.0f - vec3(bias), vec3(0.0f)))),
                 1.0f
@@ -74,14 +74,14 @@ int main()
         auto&& edgeBlur = [&](vec2 uv) {
             vec3 col(0.0f);
             float base = 0.0f;
-            vec3 ct = _rgb(sample(*toBlur, uv, SampleUV::Clamp, SamplePoint::Point));
+            vec3 ct = _rgb(sample<U8>(*toBlur, uv, SampleUV::Clamp, SamplePoint::Point));
             const float size = 3.0f;
             for (float ddx = -size; ddx <= size + 0.1f; ddx += 1.0f)
             {
                 for (float ddy = -size; ddy <= size + 0.1f; ddy += 1.0f)
                 {
                     vec2 offset = vec2(ddx, ddy);
-                    vec3 smp = _rgb(sample(*toBlur, uv + offset / vec2(toBlur->cols, toBlur->rows),
+                    vec3 smp = _rgb(sample<U8>(*toBlur, uv + offset / vec2(toBlur->cols, toBlur->rows),
                         SampleUV::Clamp, SamplePoint::Point));
 
                     float p = 1.0f; // cos(length(offset) * 3.1415926f / size / pow(2.0f, 0.5f)) + 1.0f;
@@ -97,34 +97,34 @@ int main()
 
         cv::Mat* toCopy = data0->tmp0;
         auto&& copy = [&](vec2 uv) {
-            return sample(*toCopy, uv, SampleUV::Repeat, SamplePoint::Point);
+            return sample<U8>(*toCopy, uv, SampleUV::Repeat, SamplePoint::Point);
         };
 
         toCopy = data0->image;
-        process(*data0->tmp0, copy);
+        process<U8>(*data0->tmp0, copy);
 
         for (int i = 0; i < 4; ++i)
         {
             toBlur = i % 2 == 0 ? data0->tmp0 : data0->tmp1;
-            process(i % 2 == 1 ? *data0->tmp0 : *data0->tmp1, edgeBlur);
+            process<U8>(i % 2 == 1 ? *data0->tmp0 : *data0->tmp1, edgeBlur);
         }
 
         toCopy = data0->background;
-        process(*data0->tmp2, copy);
+        process<U8>(*data0->tmp2, copy);
 
         for (int i = 0; i < 4; ++i)
         {
             toBlur = i % 2 == 0 ? data0->tmp2 : data0->tmp3;
-            process(i % 2 == 1 ? *data0->tmp2 : *data0->tmp3, edgeBlur);
+            process<U8>(i % 2 == 1 ? *data0->tmp2 : *data0->tmp3, edgeBlur);
         }
 
         bgImg = data0->tmp3;
         fgImg = data0->tmp1;
-        process(*data0->output, mask);
+        process<U8>(*data0->output, mask);
 
         bgImg = data0->background;
         fgImg = data0->image;
-        process(*data0->tmp0, mask);
+        process<U8>(*data0->tmp0, mask);
 
         cv::imshow("OutputF", *data0->tmp1);
         cv::imshow("OutputB", *data0->tmp3);

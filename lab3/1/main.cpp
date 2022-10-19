@@ -37,13 +37,13 @@ int main()
         avgFPS = mix(avgFPS, 1.0f / (float(now - preTime) / CLOCKS_PER_SEC), 0.1f);
         preTime = now;
 
-        multiProcess<64>(surface, [&](vec2 uv) {
+        multiProcess<U8, 64>(surface, [&](vec2 uv) {
             vec2 pos = uv * 2.0f - 1.0f;
             vec2 scalePos = pos * 0.1f;
             float len = length(pos);
             float x = clamp(len, 0.0f, 1.0f);
             vec2 smpUV = mix(scalePos, pos, 0.5f - 0.5f * cos(x * 3.1415926f)) * 0.5f + 0.5f;
-            vec4 col = sample(frame, smpUV, SampleUV::Repeat, SamplePoint::Linear);
+            vec4 col = sample<U8>(frame, smpUV, SampleUV::Repeat, SamplePoint::Linear);
             return col;
         });
         

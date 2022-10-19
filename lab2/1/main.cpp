@@ -48,8 +48,8 @@ int main()
         cv::Mat* output = reinterpret_cast<UserData0*>(data)->output;
         cv::Mat* image = reinterpret_cast<UserData0*>(data)->input;
 
-        process(*output, [&](vec2 uv) {
-            vec3 col = _xyz(sample(*image, uv));
+        process<U8>(*output, [&](vec2 uv) {
+            vec3 col = _xyz(sample<U8>(*image, uv));
 
             col = sigmoid(col, glm::vec3(val / reinterpret_cast<UserData0*>(data)->tmax) * 4.0f + 0.0001f);
 

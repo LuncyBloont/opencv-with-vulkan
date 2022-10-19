@@ -34,9 +34,9 @@ int main()
         Data0* data0 = reinterpret_cast<Data0*>(rawData0);
         float bias = val / data0->biasMax;
 
-        process(*data0->output, [&](vec2 uv) {
-            vec3 raw = _rgb(sample(*data0->image, uv));
-            vec3 bg = _rgb(sample(*data0->background, uv));
+        process<U8>(*data0->output, [&](vec2 uv) {
+            vec3 raw = _rgb(sample<U8>(*data0->image, uv));
+            vec3 bg = _rgb(sample<U8>(*data0->background, uv));
             return vec4(
                 mix(vec3(0.0f), vec3(1.0f), sign(max(abs(raw - bg) - vec3(bias), vec3(0.0f)))),
                 1.0f

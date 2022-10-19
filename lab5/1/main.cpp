@@ -44,7 +44,7 @@ int main()
         }
     } */
 
-    float filterSize = 32.0f;
+    float filterSize = 4.0f;
 
     markTime();
 
@@ -108,7 +108,7 @@ int main()
 
     cv::Mat output3;
     output3.create(input.size(), CV_8UC3);
-    cv::boxFilter(input, output3, -1, cv::Size(filterSize * 2, filterSize * 2));
+    cv::boxFilter(input, output3, -1, cv::Size(int(filterSize) * 2, int(filterSize) * 2));
 
     endMark("OpenCV boxFilter”√ ±£∫%f√Î\n");
 
