@@ -26,21 +26,3 @@ void initializeMemoryTransfer()
     
     trydo(VK_SUCCESS) = vkAllocateMemory(gVkDevice, &transMemoryInfo, DEFAULT_ALLOCATOR, &transferMemory);
 }
-
-void copyMat2GPUMat(const cv::Mat& mat, GPUMat& gmat)
-{
-    const cv::Mat* cvmat = &mat;
-    cv::Mat matfor3;
-    if (mat.channels() == 3)
-    {
-        createMatC4(matfor3, mat);
-        cvmat = &matfor3;
-    }
-
-    void* data;
-    vkMapMemory(gVkDevice, transferMemory, 0, gmat.memoryRequirements.size, 0, &data);
-    memcpy(data, cvmat->data, U32(cvmat->dataend - cvmat->datastart));
-    vkUnmapMemory(gVkDevice, transferMemory);
-
-    
-}

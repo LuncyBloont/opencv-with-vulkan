@@ -45,7 +45,7 @@ GPUMat::GPUMat(cv::Mat* mat, bool readable) : cpuData(mat), readable(readable)
 
     vkBindImageMemory(gVkDevice, image, gImgMemory->vulkanMemory(), memory);
 
-    // image view
+    // image view 
 
     DEFAULT_IMAGE_VIEW viewInfo{};
     viewInfo.image = image;
@@ -72,11 +72,4 @@ void GPUMat::apply()
     }
 }
 
-void createMatC4(cv::Mat& dst, const cv::Mat& src)
-{
-    dst.create(src.size(), CV_8UC4);
-    multiProcess<32>(dst, [&](glm::vec2 uv) {
-        return glm::vec4(_rgb(sample(src, uv, SampleUV::Clamp, SamplePoint::Point)), 1.0f);
-    });
-}
 

@@ -16,10 +16,10 @@ class GPUMem
 private:
     struct MemSeg
     {
-        uint32_t start = 0;
-        uint32_t size = 0;
+        VkDeviceSize start = 0;
+        VkDeviceSize size = 0;
 
-        explicit MemSeg(uint32_t start = 0, uint32_t size = 0);
+        explicit MemSeg(VkDeviceSize start = 0, VkDeviceSize size = 0);
 
         bool operator<(const MemSeg& other) const;
     };
@@ -27,12 +27,12 @@ private:
 private:
     VkDeviceMemory memory;
     std::set<MemSeg> used;
-    uint32_t size;
+    VkDeviceSize size;
     VkMemoryRequirements memoryType;
     VkMemoryPropertyFlags properties;
 
-public:
-    explicit GPUMem(uint32_t size, const VkMemoryRequirements& requirements, VkMemoryPropertyFlags properties);
+public: 
+    explicit GPUMem(VkDeviceSize size, const VkMemoryRequirements& requirements, VkMemoryPropertyFlags properties);
     virtual ~GPUMem();
 
     GPUMem(const GPUMem&) = delete;
@@ -42,8 +42,8 @@ public:
 
     bool isCompatible(const VkMemoryRequirements& requirements, VkMemoryPropertyFlags properties) const;
     bool check() const;
-    uint32_t alloc(uint32_t size);
-    bool free(uint32_t ptr);
+    VkDeviceSize alloc(VkDeviceSize size);
+    bool free(VkDeviceSize ptr);
     const VkDeviceMemory& vulkanMemory() const;
     
 };

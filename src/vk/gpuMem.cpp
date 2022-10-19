@@ -25,7 +25,7 @@ uint32_t findMemoryIndex(uint32_t typeFilter, VkMemoryPropertyFlags properties)
     throw std::runtime_error("find memory index");
 }
 
-GPUMem::MemSeg::MemSeg(uint32_t start, uint32_t size) : start(start), size(size) {}
+GPUMem::MemSeg::MemSeg(VkDeviceSize start, VkDeviceSize size) : start(start), size(size) {}
 
 bool GPUMem::MemSeg::operator<(const GPUMem::MemSeg& other) const
 {
@@ -33,7 +33,7 @@ bool GPUMem::MemSeg::operator<(const GPUMem::MemSeg& other) const
 }
 
 
-GPUMem::GPUMem(uint32_t size, const VkMemoryRequirements& requirements, VkMemoryPropertyFlags properties) :
+GPUMem::GPUMem(VkDeviceSize size, const VkMemoryRequirements& requirements, VkMemoryPropertyFlags properties) :
     size(size), memoryType(requirements), properties(properties)
 {
     assertVkEnv;
@@ -59,7 +59,7 @@ bool GPUMem::isCompatible(const VkMemoryRequirements& requirements, VkMemoryProp
 
 bool GPUMem::check() const
 {
-    uint32_t preEnd = 0;
+    VkDeviceSize preEnd = 0;
     for (const auto& seg : used)
     {
         if (seg.size == 0 || seg.start < preEnd)
@@ -75,12 +75,12 @@ bool GPUMem::check() const
     return true;
 }
 
-uint32_t GPUMem::alloc(uint32_t size)
+VkDeviceSize GPUMem::alloc(VkDeviceSize size)
 {
-    uint32_t ptr = 0;
+    VkDeviceSize ptr = 0;
     for (const auto& seg : used)
     {
-        if (ptr + size <= seg.start)
+        if (ptr + size <= seg.start) 
         {
             break;
         }
@@ -103,7 +103,7 @@ uint32_t GPUMem::alloc(uint32_t size)
     return ptr;
 }
 
-bool GPUMem::free(uint32_t ptr)
+bool GPUMem::free(VkDeviceSize ptr)
 {
     auto it = used.find(MemSeg{ ptr, 0 });
     if (it == used.end())
