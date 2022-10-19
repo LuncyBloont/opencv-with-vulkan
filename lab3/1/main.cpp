@@ -5,14 +5,14 @@
 #include "opencv2/videoio.hpp"
 #include "shader.h"
 #include "opencv2/core.hpp"
-#include "vk/gpu.h"
 
-#define VIDEO_PATH 0
+#define VIDEO_PATH "../0.webm"
 
 using namespace glm;
 
 int main()
 {
+    std::cout << "running...\n";
     cv::VideoCapture video(VIDEO_PATH);
     cv::Mat frame, surface;
 

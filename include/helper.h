@@ -8,3 +8,6 @@
     } \
     resultPtr = (times + 2 - 1) % 2 == 1 ? _src : _dst; \
 }
+
+void markTime();
+void endMark(const char* msg);
