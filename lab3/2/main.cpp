@@ -23,7 +23,7 @@ int main()
         output.create(input.size(), input.type());
 
         GPUMat ginput(&input);
-        GPUMat goutput(&output, true);
+        GPUMat goutput(&output, WRITE_MAT);
 
         ginput.apply();
 

@@ -212,4 +212,31 @@ VKINFO_DECLARE(VkSubmitInfo, ONE_TIME_SUBMIT,
     this->sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 );
 
+VKINFO_DECLARE(VkImageMemoryBarrier, IMAGE_BARRIER, 
+    this->image = VK_NULL_HANDLE;
+    this->pNext = nullptr;
+    this->sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+    this->dstAccessMask = 0;
+    this->srcAccessMask = 0;
+    this->dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    this->srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    this->oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    this->newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+    this->subresourceRange = VkImageSubresourceRange{
+        VK_IMAGE_ASPECT_COLOR_BIT,
+        0, 1, 0, 1
+    };
+);
+
+VKINFO_DECLARE(VkBufferCreateInfo, DEFAULT_BUFFER,
+    this->sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    this->pNext = nullptr;
+    this->flags = 0;
+    this->pQueueFamilyIndices = nullptr;
+    this->queueFamilyIndexCount = 0;
+    this->size = 0;
+    this->sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    this->usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+);
+
 #undef VKINFO_DECLARE

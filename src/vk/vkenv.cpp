@@ -1,5 +1,6 @@
 #include "vk/vkenv.h"
 #include "configMgr.hpp"
+#include "gpuMat.h"
 #include "gpuMem.h"
 #include "vk/vkHelper.h"
 #include "vk/vkinfo.h"
@@ -11,6 +12,7 @@
 #include <stdexcept>
 #include <stdint.h>
 #include <string>
+#include <utility>
 #include <vcruntime.h>
 #include <vector>
 
@@ -23,9 +25,11 @@ VkDebugUtilsMessengerEXT gVkDebuger;
 
 GPUMem* gImgMemory = nullptr;
 GPUMem* gVertexMemory = nullptr;
+GPUMem* gIndexMemory = nullptr;
 GPUMem* gUniformMemory = nullptr;
 GPUMem* gFrameBufferMemory = nullptr;
 GPUMem* gTransMemory = nullptr;
+GPUMem* gReadMemory = nullptr;
 
 VkCommandPool gVkCommandPool = nullptr;
 
@@ -256,15 +260,21 @@ void initializeVulkan()
     setupVkDebug();
     setupDevice();
     createCommandPool();
+
+    enableImageTransferBuffer();
 }
 
 void cleanupVulkan()
 {
+    disableImageTransferBuffer();
+
     memoryDisable(gImgMemory);
     memoryDisable(gVertexMemory);
+    memoryDisable(gIndexMemory);
     memoryDisable(gUniformMemory);
     memoryDisable(gFrameBufferMemory);
     memoryDisable(gTransMemory);
+    memoryDisable(gReadMemory);
 
     destoryCommandPool();
     cleaupDevice();
@@ -299,5 +309,3 @@ void endCommandOnce(VkCommandBuffer cmdBuf)
 
     vkFreeCommandBuffers(gVkDevice, gVkCommandPool, 1, &cmdBuf);
 }
-
-

@@ -37,7 +37,7 @@ int main()
         avgFPS = mix(avgFPS, 1.0f / (float(now - preTime) / CLOCKS_PER_SEC), 0.1f);
         preTime = now;
 
-        multiProcess<U8, 64>(surface, [&](vec2 uv) {
+        multiProcess<U8, 32>(surface, [&](vec2 uv) {
             vec2 pos = uv * 2.0f - 1.0f;
             vec2 scalePos = pos * 0.1f;
             float len = length(pos);

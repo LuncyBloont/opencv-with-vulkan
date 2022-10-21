@@ -19,9 +19,11 @@ extern VkDebugUtilsMessengerEXT gVkDebuger;
 
 extern GPUMem* gImgMemory;
 extern GPUMem* gVertexMemory;
+extern GPUMem* gIndexMemory;
 extern GPUMem* gUniformMemory;
 extern GPUMem* gFrameBufferMemory;
 extern GPUMem* gTransMemory;
+extern GPUMem* gReadMemory;
 
 extern VkCommandPool gVkCommandPool;
 
@@ -37,5 +39,3 @@ void cleanupVulkan();
 
 VkCommandBuffer beginCommandOnce();
 void endCommandOnce(VkCommandBuffer cmdBuf);
-
-void transitionImageLayout(); // TODO: 
