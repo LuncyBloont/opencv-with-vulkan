@@ -1,6 +1,7 @@
 #pragma once
 
 #include "gpuMem.h"
+#include "helper.h"
 #include "vk/vkinfo.h"
 #include "vkinfo.h"
 #include "vulkan/vulkan_core.h"
@@ -92,6 +93,13 @@ VKINFO_DECLARE(VkImageViewCreateInfo, DEFAULT_IMAGE_VIEW,
 );
 
 VKINFO_DECLARE(VkDebugUtilsMessengerCreateInfoEXT, DEFAULT_DEBUGER,
+    static const _Log_Type_ VkMoreLog({
+        "* vulkan *",
+        "\033[44;1m",
+        "\033[30m",
+        "\033[34m"
+    }, stdout);
+
     this->sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
     this->messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
         VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
@@ -108,22 +116,22 @@ VKINFO_DECLARE(VkDebugUtilsMessengerCreateInfoEXT, DEFAULT_DEBUGER,
 
             switch (messageSeverity) {
                 case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
-                    std::cerr << "VK::: error> \033[41;30m" << pCallbackData->pMessage << "\033[0m\n";
+                    LogErr("VK::: error[%d]@%s> %s\n", pCallbackData->messageIdNumber, pCallbackData->pMessageIdName, pCallbackData->pMessage);
                     break;
                 case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
-                    std::cerr << "VK:::  warn> \033[44;30m" << pCallbackData->pMessage << "\033[0m\n";
+                    LogWarn("VK::: warn[%d]@%s> %s\n", pCallbackData->messageIdNumber, pCallbackData->pMessageIdName, pCallbackData->pMessage);
                     break;
                 case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
-                    std::cerr << "VK:::  info> \033[32m" << pCallbackData->pMessage << "\033[0m\n";
+                    VkMoreLog("VK::: info[%d]@%s> %s\n", pCallbackData->messageIdNumber, pCallbackData->pMessageIdName, pCallbackData->pMessage);
                     break;
                 case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
                     if (ECHO_VULKAN_VERBOSE)
                     {
-                        std::cerr << "VK:::  verb> \033[32m" << pCallbackData->pMessage << "\033[0m\n";
+                        VkMoreLog("VK::: verb[%d]@%s> %s\n", pCallbackData->messageIdNumber, pCallbackData->pMessageIdName, pCallbackData->pMessage);
                     }
                     break;
                 default:
-                    std::cerr << "VK::: other> \033[47;30m" << pCallbackData->pMessage << "\033[0m\n";
+                    VkMoreLog("VK::: other[%d]@%s> %s\n", pCallbackData->messageIdNumber, pCallbackData->pMessageIdName, pCallbackData->pMessage);
                     break;
             }
 

@@ -1,5 +1,6 @@
 #include "gpuBuf.h"
 #include "gpuMem.h"
+#include "helper.h"
 #include "vkenv.h"
 #include "vkinfo.h"
 #include "vulkan/vulkan_core.h"
@@ -46,7 +47,7 @@ GPUBuffer::GPUBuffer(VkDeviceSize size, VkBufferUsageFlags usage)
             vkBindBufferMemory(gVkDevice, buffer, gIndexMemory->vulkanMemory(), memory);
             break;
         default:
-            std::cerr << "Unknown buffer usage...\n";
+            LogErr("Unknown buffer usage...\n");
             throw std::runtime_error("buffer usage");
     }
 }
@@ -68,7 +69,7 @@ void GPUBuffer::mapMem()
     }
     else 
     {
-        std::cerr << "\033[31mDevice local memory buffer can't be maped.\n\033[0m";
+        LogErr("Device local memory buffer can't be maped.\n");
         throw std::runtime_error("map device local memory");
     }
 }
@@ -85,7 +86,7 @@ void GPUBuffer::unmapMem()
     }
     else 
     {
-        std::cerr << "\033[31mDevice local memory buffer can't be unmaped.\n\033[0m";
+        LogErr("Device local memory buffer can't be unmaped.\n");
         throw std::runtime_error("unmap device local memory");
     }
 }

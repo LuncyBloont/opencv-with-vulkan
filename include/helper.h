@@ -1,6 +1,9 @@
 #pragma once
 
 #include "glm/glm.hpp"
+#include <cstdio>
+#include <sstream>
+#include <string>
 
 #define MULTI_PASS(times, _src, _dst, resultPtr, ...) { for (int i##times = 0; i##times < times; ++i##times) \
     { \
@@ -18,3 +21,67 @@ float areaOfTriangle(glm::vec2 A, glm::vec2 B, glm::vec2 C);
 float disToLine(glm::vec2 p, glm::vec2 A, glm::vec2 B);
 
 #define U8 uint8_t, 255
+
+
+#define Log _Log_Type_
+
+/** @brief class Log is used to Log message on console.
+*/
+class Log
+{
+public:
+    enum class LogType
+    {
+        Error,
+        Info,
+        Waring,
+        Custom
+    };
+
+    struct Profile
+    {
+        const char* prefix = "";
+        const char* prefixStyle = "";
+        const char* signStyle = "";
+        const char* textStyle = "";
+    };
+
+private:
+    LogType type;
+    FILE* file = stdout;
+    Profile custom;
+
+private:
+    void setColor() const;
+    void unsetColor() const;
+
+public:
+
+    explicit Log(LogType type, FILE* file);
+    explicit Log(const Profile& customProfile, FILE* file);
+
+    template<typename ...Args>
+    void operator()(const std::string& msg, const Args&... args) const
+    {
+        setColor();
+        std::fprintf(file, msg.c_str(), args...);
+        unsetColor();
+    }
+};
+
+#undef Log
+
+extern const _Log_Type_ Log;
+extern const _Log_Type_ LogErr;
+extern const _Log_Type_ LogWarn;
+
+template <typename T>
+std::string _any_to_string(const T& t)
+{
+    std::stringstream s;
+    s << t;
+    return s.str();
+}
+
+#define CSTR(s) _any_to_string(s).c_str()
+#define STR(s) _any_to_string(s)

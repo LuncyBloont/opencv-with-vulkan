@@ -12,7 +12,7 @@ using namespace glm;
 
 int main()
 {
-    std::cout << "running...\n";
+    Log("running...\n");
     cv::VideoCapture video(VIDEO_PATH);
     cv::Mat frame, surface;
 
@@ -56,8 +56,8 @@ int main()
             break;
         }
     }
-
-    std::cout << "AVG FPS: " << avgFPS << '\n';
+    
+    Log("AVG FPS: %f\n", avgFPS);
 
     return 0;
 }

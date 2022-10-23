@@ -1,4 +1,5 @@
 #include "vk/gpuMem.h"
+#include "helper.h"
 #include "vkenv.h"
 #include "vkinfo.h"
 #include "vulkan/vulkan_core.h"
@@ -21,7 +22,7 @@ uint32_t findMemoryIndex(uint32_t typeFilter, VkMemoryPropertyFlags properties)
         }
     }
 
-    std::cerr << "\033[31mCouldn't find required memory index!\n";
+    LogErr("Couldn't find required memory index!\n");
     throw std::runtime_error("find memory index");
 }
 
@@ -88,7 +89,7 @@ VkDeviceSize GPUMem::alloc(VkDeviceSize size)
     }
     if (ptr + size > this->size)
     {
-        std::cerr << "Failed to alloc memory (need: " << size << ")\n";
+        LogErr("Failed to alloc memory (need: %u)\n", size);
         throw std::runtime_error("alloc memory");
     }
 
@@ -96,7 +97,7 @@ VkDeviceSize GPUMem::alloc(VkDeviceSize size)
 
     if (!check())
     {
-        std::cerr << "Memory error!\n";
+        LogErr("Memory error: broken...\n");
         throw std::runtime_error("memory broken");
     }
 
@@ -115,7 +116,7 @@ bool GPUMem::free(VkDeviceSize ptr)
 
     if (!check())
     {
-        std::cerr << "Memory error!\n";
+        LogErr("Memory error: broken...\n");
         throw std::runtime_error("memory broken");
     }
 

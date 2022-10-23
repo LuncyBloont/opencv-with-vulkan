@@ -1,6 +1,7 @@
 #pragma once
 
 #include "configMgr.hpp"
+#include "helper.h"
 #include <cctype>
 #include <fstream>
 #include <iostream>
@@ -118,7 +119,7 @@ inline void readConfig(std::vector<ConfigItem>& config, const std::string& fname
     std::ifstream ifs(fname, std::ios::in);
     if (!ifs.is_open())
     {
-        std::cerr << "failed to open file (" << fname << ")\n";
+        LogErr("failed to open file (%s)\n", CSTR(fname));
         throw std::runtime_error("open");
     }
     while (!ifs.eof())
@@ -181,18 +182,18 @@ inline void readConfig(std::map<std::string, ConfigItem>& config, const std::str
 
 inline void print(const std::string& title, const std::map<std::string, ConfigItem>& config)
 {
-    std::cout << title << ":\n";
+    Log("%s:\n", CSTR(title));
     for (const auto& item : config)
     {
-        std::cout << item.second << "\n";
+        Log("%s\n", CSTR(item.second));
     }
 }
 
 inline void print(const std::string& title, const std::vector<ConfigItem>& config)
 {
-    std::cout << title << ":\n";
+    Log("%s:\n", CSTR(title));
     for (const auto& item : config)
     {
-        std::cout << "    " << item << "\n";
+        Log("    %s\n", CSTR(item));
     }
 }

@@ -1,6 +1,7 @@
 #include "vk/gpuMat.h"
 #include "gpuBuf.h"
 #include "gpuMem.h"
+#include "helper.h"
 #include "shader.h"
 #include "vk/vkenv.h"
 #include "vk/vkinfo.h"
@@ -111,7 +112,7 @@ void transitionImageLayout(VkImage image, VkFormat format, ImageLayoutTransition
     }
     else
     {
-        std::cerr << "\033[31munsupported layout transition!\n\033[0m";
+        LogErr("Unsupported layout transition!\n");
         throw std::runtime_error("layout transition");
     }
 

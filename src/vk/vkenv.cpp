@@ -2,6 +2,7 @@
 #include "configMgr.hpp"
 #include "gpuMat.h"
 #include "gpuMem.h"
+#include "helper.h"
 #include "vk/vkHelper.h"
 #include "vk/vkinfo.h"
 #include "vulkan/vulkan_core.h"
@@ -158,10 +159,11 @@ void setupDevice()
         deviceConfig.push_back({ physicalDeviceProperties.deviceName, ConfigType::String, CFG("Off") });
         deviceSet.insert({ physicalDeviceProperties.deviceName, c });
 
-        std::cout << physicalDeviceProperties.deviceName << ":\n"
-        << "    type: " << physicalDeviceProperties.deviceType << "\n"
-        << "    API version: " << physicalDeviceProperties.apiVersion << "\n"
-        << "    driver version: " << physicalDeviceProperties.driverVersion << "\n";
+        Log("\n%s: \n    type: %d\n    API version: %d\n    driver version: %d\n",
+            physicalDeviceProperties.deviceName,
+            physicalDeviceProperties.deviceType,
+            physicalDeviceProperties.apiVersion,
+            physicalDeviceProperties.driverVersion);
 
         VkPhysicalDeviceFeatures deviceFeatures;
         vkGetPhysicalDeviceFeatures(c, &deviceFeatures);
@@ -177,7 +179,7 @@ void setupDevice()
             allfeaturesCount += 1;
         }
 
-        std::cout << "    features count: " << featuresCount << "/" << allfeaturesCount << "\n";
+        Log("    features count: %d/%d\n", featuresCount, allfeaturesCount);
     }
 
     makeConfig("./deviceConfigDefault.ini", deviceConfig, CFG("On"));
@@ -216,7 +218,7 @@ void setupDevice()
 
     if (!queueFound)
     {
-        std::cerr << "\033[31mFailed to find graphics queue.\033[0m\n";
+        LogErr("Failed to find graphics queue.\n");
         throw std::runtime_error("graphics queue");
     }
 
