@@ -13,7 +13,7 @@ GPUBuffer::GPUBuffer(VkDeviceSize size, VkBufferUsageFlags usage)
 
     this->usage = usage;
 
-    trydo(VK_SUCCESS) = vkCreateBuffer(gVkDevice, &bufInfo, DEFAULT_ALLOCATOR, &buffer);
+    trydo(VK_SUCCESS) = vkCreateBuffer(gVkDevice, &bufInfo, GVKALC, &buffer);
 
     vkGetBufferMemoryRequirements(gVkDevice, buffer, &memoryRequirements);
 
@@ -53,7 +53,7 @@ GPUBuffer::GPUBuffer(VkDeviceSize size, VkBufferUsageFlags usage)
 
 GPUBuffer::~GPUBuffer()
 {
-    vkDestroyBuffer(gVkDevice, buffer, DEFAULT_ALLOCATOR);
+    vkDestroyBuffer(gVkDevice, buffer, GVKALC);
 }
 
 void GPUBuffer::mapMem()

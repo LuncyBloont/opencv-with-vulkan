@@ -1,6 +1,5 @@
 #pragma once
 
-#include "gpuMem.h"
 #include "vulkan/vulkan_core.h"
 #include <cstdint>
 #include <set>

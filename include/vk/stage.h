@@ -6,45 +6,81 @@
 #include "vulkan/vulkan_core.h"
 #include <array>
 #include <stdint.h>
+#include <string>
 #include <vector>
+
+class Stage;
+
+struct StageProperties
+{
+    std::array<Stage*, 3> reference;
+    std::array<GPUMat*, 3> textures;
+
+    std::array<glm::mat4x4, 8> uniMat;   
+    std::array<glm::vec4, 8> uniVec; // custom vec4 x 8
+/* 
+system vec4 x 8:
+0 to 2: reference[0 to 2] info { width, height, mipmapLevel, 0.0 }    
+3 to 5: textures[0 to 2] info { width, height, mipmapLevel, 0.0 }   
+6: time { s, 1/2s, ms, 1/2ms }
+7: 
+*/
+
+    std::string shaderPath;
+    
+    std::string customVertexShader = "../defaultVS/screenRect.spv";
+};
+
+struct DefaultUniform
+{
+    alignas(16) glm::mat4 matrix[8];
+    alignas(16) glm::vec4 vector[8];
+};
 
 class Stage
 {
 private:
-    GPUMat frame;
-    cv::Mat Data;
+    GPUMat* frame;
+    cv::Mat data;
 
     VkFramebuffer frameBuffer;
 
     VkRenderPass renderPass;
     VkPipeline pipeline;
+    VkPipelineLayout pipelineLayout;
+    VkDescriptorSetLayout descriptorSetLayout;
+    VkDescriptorPool descriptorPool;
+    
+    VkDescriptorSet descriptorSet;
+
+    VkShaderModule vertexShader;
+    VkShaderModule fragmentShader;
 
     uint32_t width;
     uint32_t height;
 
-    std::array<Stage*, 8> refeance;
-    std::array<GPUMat*, 8> textures;
-
-    std::array<glm::mat4x4, 8> uniMat;
-    std::array<glm::vec4, 16> uniVec;
-
     uint32_t age = 0;
+
+    StageProperties assets;
 
 public:
 
-    Stage(uint32_t width, uint32_t height, 
-        const std::array<Stage*, 8>& refeance,
-        const std::array<GPUMat*, 8>& textures,
-        const std::array<glm::mat4x4, 8>& uniMat,
-        const std::array<glm::vec4, 16>& uniVec);
-    ~Stage();
+    explicit Stage(uint32_t width, uint32_t height, const StageProperties& assets);
+    virtual ~Stage();
 
     Stage(const Stage& o) = delete;
     Stage(const Stage&& o) = delete;
     Stage& operator=(const Stage& o) = delete;
     Stage& operator=(const Stage&& o) = delete;
 
-    void render(uint32_t age);
-
+    void render(uint32_t newAge);
     void show(const char* windowName) const;
+
+private:
+    void createShader();
+    void createPipelineLayout();
+    void buildRenderPass();
+    void buildPipeline();
+    void buildUniform();
+    void cleanup();
 };

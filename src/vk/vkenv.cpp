@@ -14,12 +14,16 @@
 #include <string>
 #include <utility>
 #include <vcruntime.h>
+#include <vcruntime_string.h>
 #include <vector>
 
 VkInstance gVkInstance = VK_NULL_HANDLE;
 
 VkPhysicalDevice gVkPhysicalDevice;
 VkDevice gVkDevice;
+
+VkPhysicalDeviceFeatures gVkPhysicalDeviceFeatures;
+VkPhysicalDeviceProperties gVkPhysicalDeviceProperties;
 
 VkDebugUtilsMessengerEXT gVkDebuger;
 
@@ -50,7 +54,7 @@ void setupVkDebug()
     auto setup = PFN_vkCreateDebugUtilsMessengerEXT(
         vkGetInstanceProcAddr(gVkInstance, "vkCreateDebugUtilsMessengerEXT")
     );
-    setup(gVkInstance, &the_DEFAULT_DEBUGER, DEFAULT_ALLOCATOR, &gVkDebuger);
+    setup(gVkInstance, &the_DEFAULT_DEBUGER, GVKALC, &gVkDebuger);
 }
 
 void cleanupVkDebug()
@@ -66,7 +70,7 @@ void cleanupVkDebug()
     auto cleanup = PFN_vkDestroyDebugUtilsMessengerEXT(
         vkGetInstanceProcAddr(gVkInstance, "vkDestroyDebugUtilsMessengerEXT")
     );
-    cleanup(gVkInstance, gVkDebuger, DEFAULT_ALLOCATOR);
+    cleanup(gVkInstance, gVkDebuger, GVKALC);
 }
 
 void setupInstance()
@@ -137,7 +141,16 @@ void setupInstance()
 
     // create instance:
 
-    trydo(VK_SUCCESS) = vkCreateInstance(&vulkanInfo, DEFAULT_ALLOCATOR, &gVkInstance);
+    trydo(VK_SUCCESS) = vkCreateInstance(&vulkanInfo, GVKALC, &gVkInstance);
+}
+
+void configDeviceFeatures(VkPhysicalDeviceFeatures* features)
+{
+    memset(features, 0, sizeof(VkPhysicalDeviceFeatures));
+    if (gVkPhysicalDeviceFeatures.samplerAnisotropy)
+    {
+        features->samplerAnisotropy = VK_TRUE;
+    }
 }
 
 void setupDevice()
@@ -190,6 +203,8 @@ void setupDevice()
         if (devConfig.String() == "On" || devConfig.String() == "on")
         {
             gVkPhysicalDevice = deviceSet.at(devConfig.key);
+            vkGetPhysicalDeviceFeatures(gVkPhysicalDevice, &gVkPhysicalDeviceFeatures);
+            vkGetPhysicalDeviceProperties(gVkPhysicalDevice, &gVkPhysicalDeviceProperties);
             break;
         }
     }
@@ -229,16 +244,19 @@ void setupDevice()
     DEFAULT_DEVICE deviceInfo{};
     deviceInfo.pQueueCreateInfos = &graphicsQueue;
     deviceInfo.queueCreateInfoCount = 1;
+
+    configDeviceFeatures(&deviceFeatures);
+
     deviceInfo.pEnabledFeatures = &deviceFeatures;
 
-    trydo(VK_SUCCESS) = vkCreateDevice(gVkPhysicalDevice, &deviceInfo, DEFAULT_ALLOCATOR, &gVkDevice);
+    trydo(VK_SUCCESS) = vkCreateDevice(gVkPhysicalDevice, &deviceInfo, GVKALC, &gVkDevice);
 
     vkGetDeviceQueue(gVkDevice, gVkGraphicsIndice, 0, &gVkGraphicsQueue);
 }
 
 void cleaupDevice()
 {
-    vkDestroyDevice(gVkDevice, DEFAULT_ALLOCATOR);
+    vkDestroyDevice(gVkDevice, GVKALC);
 }
 
 void createCommandPool()
@@ -246,12 +264,12 @@ void createCommandPool()
     DEFAULT_COMMAND_POOL commandPoolInfo{};
     commandPoolInfo.queueFamilyIndex = gVkGraphicsIndice;
 
-    trydo(VK_SUCCESS) = vkCreateCommandPool(gVkDevice, &commandPoolInfo, DEFAULT_ALLOCATOR, &gVkCommandPool);
+    trydo(VK_SUCCESS) = vkCreateCommandPool(gVkDevice, &commandPoolInfo, GVKALC, &gVkCommandPool);
 }
 
 void destoryCommandPool()
 {
-    vkDestroyCommandPool(gVkDevice, gVkCommandPool, DEFAULT_ALLOCATOR);
+    vkDestroyCommandPool(gVkDevice, gVkCommandPool, GVKALC);
 }
 
 void initializeVulkan()
@@ -262,10 +280,12 @@ void initializeVulkan()
     createCommandPool();
 
     enableImageTransferBuffer();
+    defaultLinearSampler = new GSampler(SampleUV::Repeat, SamplePoint::Linear);
 }
 
 void cleanupVulkan()
 {
+    delete defaultLinearSampler;
     disableImageTransferBuffer();
 
     memoryDisable(gImgMemory);
@@ -279,7 +299,7 @@ void cleanupVulkan()
     destoryCommandPool();
     cleaupDevice();
     cleanupVkDebug();
-    vkDestroyInstance(gVkInstance, DEFAULT_ALLOCATOR);
+    vkDestroyInstance(gVkInstance, GVKALC);
 }
 
 VkCommandBuffer beginCommandOnce()
