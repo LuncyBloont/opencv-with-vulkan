@@ -1,10 +1,9 @@
 #pragma once
 
+#include "gpuMem.h"
 #include "vulkan/vulkan_core.h"
 #include <vulkan/vulkan.h>
 #include <utility>
-#include "gpuMem.h"
-#include "vkHelper.h"
 
 #define EXTENSIONS_CONFIG "./vulkanExtensions.ini"
 #define LAYERS_CONFIG "./vulkanLayers.ini"
@@ -15,7 +14,12 @@ extern VkInstance gVkInstance;
 extern VkPhysicalDevice gVkPhysicalDevice;
 extern VkDevice gVkDevice;
 
+extern VkPhysicalDeviceFeatures gVkPhysicalDeviceFeatures;
+extern VkPhysicalDeviceProperties gVkPhysicalDeviceProperties;
+
 extern VkDebugUtilsMessengerEXT gVkDebuger;
+
+class GPUMem;
 
 extern GPUMem* gImgMemory;
 extern GPUMem* gVertexMemory;

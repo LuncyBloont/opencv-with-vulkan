@@ -1,17 +1,45 @@
 #include "vk/gpuMat.h"
+#include "glm/fwd.hpp"
 #include "gpuBuf.h"
 #include "gpuMem.h"
 #include "helper.h"
+#include "imageHelper.h"
+#include "opencv2/core/mat.hpp"
 #include "shader.h"
 #include "vk/vkenv.h"
 #include "vk/vkinfo.h"
 #include "vulkan/vulkan_core.h"
 #include "vkHelper.h"
+#include <stdint.h>
 #include <vcruntime_string.h>
+#include <vector>
 
-GPUBuffer* imageTransferBuffer = nullptr;
+GSampler* defaultLinearSampler = nullptr;
 
-GPUMat::GPUMat(cv::Mat* mat, bool readable, bool srgb) : cpuData(mat), readable(readable), srgb(srgb)
+void generateMipmaps(const cv::Mat& level0, std::vector<cv::Mat>& mipmaps, uint32_t levels)
+{
+    mipmaps.clear();
+    mipmaps.resize(levels - 1);
+    for (uint32_t i = 1; i < levels; ++i)
+    {
+        mipmaps[i - 1].create(
+            toMipmapSize(level0.rows, i), 
+            toMipmapSize(level0.cols, i), 
+            level0.type());
+        const cv::Mat& ref = i == 1 ? level0 : mipmaps[i - 2];
+        glm::vec3 offset = glm::vec3(1.0f / ref.cols, 1.0f / ref.rows, 0.0f);
+        process<U8>(mipmaps[i - 1], [&](glm::vec2 uv) {
+            return (
+                texelFetch<U8>(ref, uv + _zz(offset)) +
+                texelFetch<U8>(ref, uv + _xz(offset)) + 
+                texelFetch<U8>(ref, uv + _zy(offset)) + 
+                texelFetch<U8>(ref, uv + _xy(offset))
+            ) * 0.25f;
+        });
+    }
+}
+
+GPUMat::GPUMat(cv::Mat* mat, bool readable, bool genMip , bool srgb) : cpuData(mat), readable(readable), srgb(srgb)
 {
     assertVkEnv;
 
@@ -21,6 +49,20 @@ GPUMat::GPUMat(cv::Mat* mat, bool readable, bool srgb) : cpuData(mat), readable(
 
     imgInfo.extent.width = mat->cols;
     imgInfo.extent.height = mat->rows;
+    levels = genMip ? mipLevel(mat->cols, mat->rows) : 1;
+    imgInfo.mipLevels = levels;
+
+    if (mat->channels() == 3)
+    {
+        cv::Mat tmp;
+        createMatC4<U8>(tmp, *mat);
+        *mat = tmp;
+    }
+
+    if (readable == READ_MAT)
+    {
+        generateMipmaps(*cpuData, mipmaps, levels);
+    }
 
     switch (mat->channels()) {
         case 1:
@@ -37,9 +79,18 @@ GPUMat::GPUMat(cv::Mat* mat, bool readable, bool srgb) : cpuData(mat), readable(
             break;
     }
 
+    if (readable == READ_MAT)
+    {
+        imgInfo.usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+    }
+    else
+    {
+        imgInfo.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+    }
+
     format = imgInfo.format;
 
-    trydo(VK_SUCCESS) = vkCreateImage(gVkDevice, &imgInfo, DEFAULT_ALLOCATOR, &image);
+    trydo(VK_SUCCESS) = vkCreateImage(gVkDevice, &imgInfo, GVKALC, &image);
 
     // allocate memory
 
@@ -47,7 +98,7 @@ GPUMat::GPUMat(cv::Mat* mat, bool readable, bool srgb) : cpuData(mat), readable(
 
     memoryEnable(gImgMemory, memoryRequirements, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, DEFAULT_T_MEM_SIZE);
 
-    memory = gImgMemory->alloc(memoryRequirements.size);
+    memory = gImgMemory->alloc(memoryRequirements.size, memoryRequirements.alignment);
 
     vkBindImageMemory(gVkDevice, image, gImgMemory->vulkanMemory(), memory);
 
@@ -56,14 +107,20 @@ GPUMat::GPUMat(cv::Mat* mat, bool readable, bool srgb) : cpuData(mat), readable(
     DEFAULT_IMAGE_VIEW viewInfo{};
     viewInfo.image = image;
     viewInfo.format = imgInfo.format;
+    viewInfo.subresourceRange.levelCount = levels;
 
-    trydo(VK_SUCCESS) = vkCreateImageView(gVkDevice, &viewInfo, DEFAULT_ALLOCATOR, &view);
+    trydo(VK_SUCCESS) = vkCreateImageView(gVkDevice, &viewInfo, GVKALC, &view);
+
+    if (readable == WRITE_MAT)
+    {
+        transitionImageLayout(image, format, 0, { VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL });
+    }
 }
 
 GPUMat::~GPUMat()
 {
-    vkDestroyImageView(gVkDevice, view, DEFAULT_ALLOCATOR);
-    vkDestroyImage(gVkDevice, image, DEFAULT_ALLOCATOR);
+    vkDestroyImageView(gVkDevice, view, GVKALC);
+    vkDestroyImage(gVkDevice, image, GVKALC);
 }
 
 
@@ -169,37 +226,97 @@ void GPUMat::apply()
 {
     if (readable == READ_MAT)
     {
-        transitionImageLayout(image, format, { VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL });
+        transitionImageLayout(image, format, 0, { VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL });
 
         imageTransferBuffer->mapMem();
         memcpy(imageTransferBuffer->data, cpuData->data, cpuData->total() * cpuData->elemSize());
         imageTransferBuffer->unmapMem();
 
-        copyBufferToImage(imageTransferBuffer->buffer, image, cpuData->cols, cpuData->rows);
+        copyBufferToImage(imageTransferBuffer->buffer, image, cpuData->cols, cpuData->rows, 0);
 
-        transitionImageLayout(image, format, { VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL });
+        transitionImageLayout(image, format, 0, { VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL });
+
+        
+        for (uint32_t i = 1; i < levels; ++i)
+        {
+            transitionImageLayout(image, format, i, { VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL });
+
+            imageTransferBuffer->mapMem();
+            memcpy(imageTransferBuffer->data, mipmaps[i - 1].data, mipmaps[i - 1].total() * mipmaps[i - 1].elemSize());
+            imageTransferBuffer->unmapMem();
+
+            copyBufferToImage(imageTransferBuffer->buffer, image, cpuData->cols, cpuData->rows, i);
+
+            transitionImageLayout(image, format, i, { VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL });
+        }
     }
     else
     {
-        transitionImageLayout(image, format, { VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL });
+        transitionImageLayout(image, format, 0, { VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL });
 
-        copyImageToBuffer(image, cpuData->cols, cpuData->rows, imageTransferBuffer->buffer);
+        copyImageToBuffer(image, cpuData->cols, cpuData->rows, 0, imageReadFromGPUBuffer->buffer);
 
-        imageTransferBuffer->mapMem();
-        memcpy(cpuData->data, imageTransferBuffer->data, cpuData->total() * cpuData->elemSize());
-        imageTransferBuffer->unmapMem();
+        imageReadFromGPUBuffer->mapMem();
+        memcpy(cpuData->data, imageReadFromGPUBuffer->data, cpuData->total() * cpuData->elemSize());
+        imageReadFromGPUBuffer->unmapMem();
         
-        transitionImageLayout(image, format, { VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL });
+        transitionImageLayout(image, format, 0, { VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL });
     }
 }
 
 void enableImageTransferBuffer()
 {
-    imageTransferBuffer = new GPUBuffer(4096 * 4256 * 4, VK_BUFFER_USAGE_TRANSFER_DST_BIT);
+    imageTransferBuffer = new GPUBuffer(4096 * 4256 * 4, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
+    imageReadFromGPUBuffer = new GPUBuffer(4096 * 4256 * 4, VK_BUFFER_USAGE_TRANSFER_DST_BIT);
 }
 
 void disableImageTransferBuffer()
 {
     delete imageTransferBuffer;
+    delete imageReadFromGPUBuffer;
 }
 
+GSampler::GSampler(SampleUV uvType, SamplePoint filterType) : uvType(uvType), filterType(filterType)
+{
+    EMPTY_SAMPLER samplerInfo{};
+
+    switch (uvType) {
+        case SampleUV::Clamp:
+            samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+            break;
+        case SampleUV::Mirror:
+            samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT;
+            break;
+        case SampleUV::Repeat:
+            samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+            break;
+    }
+    samplerInfo.addressModeV = samplerInfo.addressModeU;
+    samplerInfo.addressModeW = samplerInfo.addressModeU;
+
+    switch (filterType) {
+        case SamplePoint::Linear:
+            samplerInfo.magFilter = VK_FILTER_LINEAR;
+            samplerInfo.minFilter = VK_FILTER_LINEAR;
+            samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+            break;
+        case SamplePoint::Point:
+            samplerInfo.magFilter = VK_FILTER_NEAREST;
+            samplerInfo.minFilter = VK_FILTER_NEAREST;
+            samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
+            break;
+    }
+
+    if (gVkPhysicalDeviceFeatures.samplerAnisotropy)
+    {
+        samplerInfo.anisotropyEnable = VK_TRUE;
+        samplerInfo.maxAnisotropy = gVkPhysicalDeviceProperties.limits.maxSamplerAnisotropy;
+    }
+
+    trydo(VK_SUCCESS) = vkCreateSampler(gVkDevice, &samplerInfo, GVKALC, &sampler);
+}
+
+GSampler::~GSampler()
+{
+    vkDestroySampler(gVkDevice, sampler, GVKALC);
+}

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "gpuMem.h"
 #include "vulkan/vulkan_core.h"
 #include <cstdint>
 #include <set>
@@ -46,7 +45,7 @@ public:
 
     bool isCompatible(const VkMemoryRequirements& requirements, VkMemoryPropertyFlags properties) const;
     bool check() const;
-    VkDeviceSize alloc(VkDeviceSize size);
+    VkDeviceSize alloc(VkDeviceSize size, VkDeviceSize alignment);
     bool free(VkDeviceSize ptr);
     const VkDeviceMemory& vulkanMemory() const;
     

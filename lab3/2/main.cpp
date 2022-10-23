@@ -1,10 +1,14 @@
 #include <iostream>
 #include <map>
+#include <string>
 #include "configMgr.hpp"
+#include "glm/fwd.hpp"
 #include "opencv2/core/mat.hpp"
 #include "opencv2/highgui.hpp"
 #include "opencv2/imgcodecs.hpp"
+#include "opencv2/videoio.hpp"
 #include "shader.h"
+#include "stage.h"
 #include "vk/gpuMat.h"
 #include "vk/vkenv.h"
 #include "gpuMem.h"
@@ -17,24 +21,30 @@ int main()
     initializeVulkan();
 
     {
-    
-        cv::Mat input = cv::imread("../abbbg.jpg");
-        cv::Mat output;
-        output.create(input.size(), input.type());
+        
+        cv::Mat input = cv::imread("../dd.png");
 
         GPUMat ginput(&input);
-        GPUMat goutput(&output, WRITE_MAT);
-
         ginput.apply();
 
-        // TODO: run shader on gouput
+        Stage goutput(input.cols, input.rows, {
+            {}, { &ginput }, {}, {},
+            "../shaders/distorting.spv"
+        });
 
-        goutput.apply();
+        uint32_t age = 1;
+        while (true) {
 
-        cv::imshow("Input", input);
-        cv::imshow("Output", output);
+            goutput.render(age);
 
-        cv::waitKey();
+            goutput.show("Output");
+
+            int key = cv::waitKey(5);
+
+            if (key == 'q') break;
+
+            age += 1;
+        }
 
     }
 

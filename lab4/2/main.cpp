@@ -9,12 +9,12 @@
 #include "opencv2/imgcodecs.hpp"
 #include "shader.h"
 #include <iostream>
+#include <string>
 
 #define BTYPE_COLOR 0
 #define BTYPE_ALPHA 1
 #define BTYPE_SIZE 2
 #define BTYPE_VALUE 3
-#define BTYPE_CONTR 4
 #define BTYPE_NONE -1
 
 constexpr glm::vec2 color_ctr = glm::vec2(128, 128);
@@ -25,8 +25,7 @@ constexpr float color_area = 16.0f;
 constexpr float color_size = 260.0f;
 constexpr float color_alpha = 280.0f;
 constexpr float color_value = 300.0f;
-constexpr float color_contra = 320.0f;
-constexpr float color_show = 340.0f;
+constexpr float color_show = 320.0f;
 
 int main(int argc, char** args)
 {
@@ -42,6 +41,7 @@ int main(int argc, char** args)
         bool ldown = false;
         glm::vec2 oldmpos;
         glm::vec2 oldmpos_m;
+        bool pickup = false;
 
         bool bmdown = false;
         bool bfirst = false;
@@ -49,8 +49,10 @@ int main(int argc, char** args)
         float bsize = 5.0f;
         float balpha = 0.5f;
         glm::vec3 bcolor = glm::vec3(0.0f, 1.0f, 1.0f);
-        float bcontr = 0.5f;
         float bvalue = 0.5f;
+
+        void (*callback0)(int event, int x, int y, int falgs, void* tmp);
+        void (*callback1)(int event, int x, int y, int falgs, void* tmp);
     } tmp;
 
     if (argc == 2)
@@ -100,35 +102,6 @@ int main(int argc, char** args)
 
     cv::imshow("Brush", tmp.colorPan);
 
-    cv::setMouseCallback("Drawer", [](int event, int x, int y, int flags, void* data) {
-        Data& tmp = *reinterpret_cast<Data*>(data);
-
-        glm::vec2 muv = glm::vec2(x, y);
-        if (event == cv::EVENT_LBUTTONDOWN) { tmp.ldown = true; tmp.oldmpos = muv; tmp.oldmpos_m = muv; tmp.bfirst = true; }
-        if (event == cv::EVENT_LBUTTONUP) { tmp.ldown = false; }
-
-        if (tmp.ldown)
-        {
-            multiProcess<U8, 32>(tmp.output, [&](glm::vec2 uv) {
-                glm::vec2 nuv = uv * glm::vec2(tmp.output.cols, tmp.output.rows);
-
-                if (disToLine(nuv, muv, tmp.oldmpos) < tmp.bsize && 
-                    (tmp.bfirst || disToLine(nuv, tmp.oldmpos, tmp.oldmpos_m) >= tmp.bsize))
-                {
-                    return glm::mix(texelFetch<U8>(tmp.output, uv), tmp.color, tmp.color.a);
-                }
-
-                return texelFetch<U8>(tmp.output, uv);
-            });
-        }
-
-        tmp.oldmpos_m = tmp.oldmpos;
-        tmp.oldmpos = muv;
-
-        cv::imshow("Drawer", tmp.output);
-        tmp.bfirst = false;
-    }, &tmp);
-
     auto update = [](int event, int x, int y, int flags, void* data) {
         Data& tmp = *reinterpret_cast<Data*>(data);
 
@@ -155,11 +128,6 @@ int main(int argc, char** args)
                 tmp.btype = BTYPE_VALUE;
             }
 
-            if (muv.y > color_contra && muv.y < color_contra + color_area)
-            {
-                tmp.btype = BTYPE_CONTR;
-            }
-
             if (muv.y > color_size && muv.y < color_size + color_area)
             {
                 tmp.btype = BTYPE_SIZE;
@@ -179,9 +147,6 @@ int main(int argc, char** args)
                 case BTYPE_COLOR:
                     tmp.bcolor = texelFetch<U8>(tmp.colorPan, lmuv / glm::vec2(color_width, color_height));
                     break;
-                case BTYPE_CONTR:
-                    tmp.bcontr = val;
-                    break;
                 case BTYPE_SIZE:
                     tmp.bsize = val * color_width;
                     break;
@@ -193,7 +158,7 @@ int main(int argc, char** args)
             }
         }
         
-        tmp.color = glm::vec4(glm::mix(tmp.bcolor, glm::vec3(1.0f), tmp.bcontr) * tmp.bvalue, tmp.balpha);
+        tmp.color = glm::vec4(tmp.bcolor * tmp.bvalue, tmp.balpha);
 
         glm::vec3 k = tmp.color / glm::max(glm::max(tmp.color.r, tmp.color.g), tmp.color.b);
 
@@ -205,7 +170,7 @@ int main(int argc, char** args)
             {
                 if (muv.x > tmp.balpha * color_width - 1.0f && muv.x < tmp.balpha * color_width + 1.0f)
                 {
-                    return glm::vec4(int(muv.y) % 2);
+                    return glm::vec4(float(int(muv.y) % 2));
                 }
                 glm::vec3 checker = glm::mix(
                     glm::vec3(1.0f), 
@@ -218,25 +183,16 @@ int main(int argc, char** args)
             {
                 if (muv.x > tmp.bvalue * color_width - 1.0f && muv.x < tmp.bvalue * color_width + 1.0f)
                 {
-                    return glm::vec4(int(muv.y) % 2);
+                    return glm::vec4(float(int(muv.y) % 2));
                 }
                 return glm::vec4(k * uv.x, 1.0f);
-            }
-
-            if (muv.y > color_contra && muv.y < color_contra + color_area)
-            {
-                if (muv.x > tmp.bcontr * color_width - 1.0f && muv.x < tmp.bcontr * color_width + 1.0f)
-                {
-                    return glm::vec4(int(muv.y) % 2);
-                }
-                return glm::vec4(glm::mix(k, glm::vec3(1.0f), uv.x), 1.0f);
             }
 
             if (muv.y > color_size && muv.y < color_size + color_area)
             {
                 if (muv.x > tmp.bsize - 1.0f && muv.x < tmp.bsize + 1.0f)
                 {
-                    return glm::vec4(int(muv.y) % 2);
+                    return glm::vec4(float(int(muv.y) % 2));
                 }
                 return glm::mix(tmp.color, glm::vec4(1.0f), float(muv.x > tmp.bsize));
             }
@@ -256,10 +212,57 @@ int main(int argc, char** args)
         cv::imshow("Brush", tmp.colorPan);
     };
 
+    tmp.callback0 = update;
+
+    cv::setMouseCallback("Drawer", [](int event, int x, int y, int flags, void* data) {
+        Data& tmp = *reinterpret_cast<Data*>(data);
+
+        glm::vec2 muv = glm::vec2(x, y);
+        if (event == cv::EVENT_LBUTTONDOWN) { tmp.ldown = true; tmp.oldmpos = muv; tmp.oldmpos_m = muv; tmp.bfirst = true; }
+        if (event == cv::EVENT_LBUTTONUP) { tmp.ldown = false; }
+
+        if (event == cv::EVENT_RBUTTONDOWN)
+        {
+            tmp.pickup = true;
+        }
+        if (event == cv::EVENT_RBUTTONUP) { tmp.pickup = false; }
+
+        if (tmp.pickup)
+        {
+            glm::vec4 color = texelFetch<U8>(tmp.output, muv / glm::vec2(tmp.output.cols, tmp.output.rows));
+            tmp.bvalue = glm::max(color.r, glm::max(color.g, color.b));
+            tmp.bcolor = color / tmp.bvalue;
+            tmp.callback0(cv::EVENT_LBUTTONUP, 0, 0, 0, &tmp);
+        }
+
+        if (tmp.ldown)
+        {
+            multiProcess<U8, 32>(tmp.output, [&](glm::vec2 uv) {
+                glm::vec2 nuv = uv * glm::vec2(tmp.output.cols, tmp.output.rows);
+
+                if (disToLine(nuv, muv, tmp.oldmpos) < tmp.bsize && 
+                    (tmp.bfirst || disToLine(nuv, tmp.oldmpos, tmp.oldmpos_m) >= tmp.bsize))
+                {
+                    return glm::mix(texelFetch<U8>(tmp.output, uv), tmp.color, tmp.color.a);
+                }
+
+                return texelFetch<U8>(tmp.output, uv);
+            });
+        }
+
+        tmp.oldmpos_m = tmp.oldmpos;
+        tmp.oldmpos = muv;
+
+        cv::imshow("Drawer", tmp.output);
+        tmp.bfirst = false;
+    }, &tmp);
+
     update(cv::EVENT_LBUTTONUP, 0, 0, 0, &tmp);
     cv::setMouseCallback("Brush", update, &tmp);
 
     cv::waitKey();
+
+    cv::imwrite("./save_" + std::to_string(time(nullptr)) + ".png", tmp.output);
 
     return 0;
 }

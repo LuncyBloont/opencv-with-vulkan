@@ -88,6 +88,16 @@ template <int id = 0, typename T, typename ...Default>
 void makeConfig(const std::string& fname, const std::vector<ConfigItem>& config, 
     const T& dft, const Default&... dfts)
 {
+    if (id == 0)
+    {    
+        std::ifstream test(fname, std::ios::in);
+        if (test.is_open())
+        {
+            test.close();
+            return;
+        }
+    }
+
     std::ofstream ofs(fname, id == 0 ? std::ios::out : std::ios::app);
     if (id < config.size())
     {
@@ -104,6 +114,13 @@ void makeConfig(const std::string& fname, const std::vector<ConfigItem>& config,
 template <int id = 0>
 void makeConfig(const std::string& fname, const std::vector<ConfigItem>& config)
 {
+    std::ifstream test(fname, std::ios::in);
+    if (test.is_open())
+    {
+        test.close();
+        return;
+    }
+
     std::ofstream ofs(fname, id == 0 ? std::ios::out : std::ios::app);
     for (int i = id; i < config.size(); ++i)
     {

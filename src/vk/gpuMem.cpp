@@ -43,12 +43,12 @@ GPUMem::GPUMem(VkDeviceSize size, const VkMemoryRequirements& requirements, VkMe
     memInfo.allocationSize = size;
     memInfo.memoryTypeIndex = findMemoryIndex(requirements.memoryTypeBits, properties);
 
-    trydo(VK_SUCCESS) = vkAllocateMemory(gVkDevice, &memInfo, DEFAULT_ALLOCATOR, &memory);
+    trydo(VK_SUCCESS) = vkAllocateMemory(gVkDevice, &memInfo, GVKALC, &memory);
 }
 
 GPUMem::~GPUMem()
 {
-    vkFreeMemory(gVkDevice, memory, DEFAULT_ALLOCATOR);
+    vkFreeMemory(gVkDevice, memory, GVKALC);
 }
 
 bool GPUMem::isCompatible(const VkMemoryRequirements& requirements, VkMemoryPropertyFlags properties) const
@@ -76,7 +76,7 @@ bool GPUMem::check() const
     return true;
 }
 
-VkDeviceSize GPUMem::alloc(VkDeviceSize size)
+VkDeviceSize GPUMem::alloc(VkDeviceSize size, VkDeviceSize alignment)
 {
     VkDeviceSize ptr = 0;
     for (const auto& seg : used)
@@ -86,6 +86,10 @@ VkDeviceSize GPUMem::alloc(VkDeviceSize size)
             break;
         }
         ptr = seg.start + seg.size;
+        if (ptr % alignment != 0)
+        {
+            ptr = (ptr / alignment + 1) * alignment;
+        }
     }
     if (ptr + size > this->size)
     {

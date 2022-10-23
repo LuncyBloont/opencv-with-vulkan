@@ -3,7 +3,8 @@
 /*.bmp~
 /.cache
 /.vscode
-/build
+/build*
+/*build
 /test
 /DOCS
 /submitPack
