@@ -1,4 +1,6 @@
 #include "vk/imageHelper.h"
+#include "vkenv.h"
+#include "vulkan/vulkan_core.h"
 #include <stdint.h>
 
 GPUBuffer* imageTransferBuffer = nullptr;
@@ -110,6 +112,20 @@ void copyImageToBuffer(VkImage image, uint32_t width, uint32_t height, uint32_t 
     };
 
     vkCmdCopyImageToBuffer(cmd, image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, buffer, 1, &copy);
+
+    endCommandOnce(cmd);
+}
+
+void copyBufferToBuffer(VkBuffer src, VkDeviceSize srcSize, VkBuffer dst, VkDeviceSize dstSize)
+{
+    VkCommandBuffer cmd = beginCommandOnce();
+    
+    VkBufferCopy copy{};
+    copy.dstOffset = 0;
+    copy.srcOffset = 0;
+    copy.size = srcSize;
+
+    vkCmdCopyBuffer(cmd, src, dst, 1, &copy);
 
     endCommandOnce(cmd);
 }

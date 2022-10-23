@@ -447,4 +447,34 @@ VKINFO_DECLARE(VkDescriptorSetLayoutCreateInfo, DESCRIPTOR_SET_LAYOUT,
     this->pBindings = nullptr;
 );
 
+VKINFO_DECLARE(VkDescriptorPoolCreateInfo, DESCRIPTOR_POOL, 
+    this->poolSizeCount = 0;
+    this->pPoolSizes = nullptr;
+    this->flags = 0;
+    this->pNext = nullptr;
+    this->sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+    this->maxSets = 0;
+);
+
+VKINFO_DECLARE(VkDescriptorSetAllocateInfo, DESCRIPTOR_SET_ALLOCATOR, 
+    this->descriptorPool = VK_NULL_HANDLE;
+    this->descriptorSetCount = 0;
+    this->pNext = nullptr;
+    this->pSetLayouts = nullptr;
+    this->sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+);
+
+VKINFO_DECLARE(VkWriteDescriptorSet, WRITE_DESCCRIPTOR, 
+    this->descriptorCount = 0;
+    this->descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    this->pBufferInfo = nullptr;
+    this->pImageInfo = nullptr;
+    this->dstArrayElement = 0;
+    this->dstBinding = 0;
+    this->dstSet = VK_NULL_HANDLE;
+    this->pNext = nullptr;
+    this->pTexelBufferView = nullptr;
+    this->sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+);
+
 #undef VKINFO_DECLARE

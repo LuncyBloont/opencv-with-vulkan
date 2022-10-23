@@ -179,49 +179,6 @@ void transitionImageLayout(VkImage image, VkFormat format, ImageLayoutTransition
     endCommandOnce(cmd);
 }
 
-void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height)
-{
-    assert(imageTransferBuffer != nullptr);
-    VkCommandBuffer cmd = beginCommandOnce();
-
-    VkBufferImageCopy copy{};
-    copy.bufferOffset = 0;
-    copy.bufferImageHeight = 0;
-    copy.bufferRowLength = 0;
-    copy.imageExtent = { width, height, 1 };
-    copy.imageOffset = { 0, 0, 0 };
-    copy.imageSubresource = { 
-        VK_IMAGE_ASPECT_COLOR_BIT,
-        0, 0, 1
-    };
-
-    vkCmdCopyBufferToImage(cmd, buffer, image, 
-        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copy);
-
-    endCommandOnce(cmd);
-}
-
-void copyImageToBuffer(VkImage image, uint32_t width, uint32_t height, VkBuffer buffer)
-{
-    assert(imageTransferBuffer != nullptr);
-    VkCommandBuffer cmd = beginCommandOnce();
-
-    VkBufferImageCopy copy{};
-    copy.bufferOffset = 0;
-    copy.bufferImageHeight = 0;
-    copy.bufferRowLength = 0;
-    copy.imageExtent = { width, height, 1 };
-    copy.imageOffset = { 0, 0, 0 };
-    copy.imageSubresource = {
-        VK_IMAGE_ASPECT_COLOR_BIT,
-        0, 0, 1
-    };
-
-    vkCmdCopyImageToBuffer(cmd, image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, buffer, 1, &copy);
-
-    endCommandOnce(cmd);
-}
-
 void GPUMat::apply()
 {
     if (readable == READ_MAT)

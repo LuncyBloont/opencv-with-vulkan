@@ -15,3 +15,5 @@ void transitionImageLayout(VkImage image, VkFormat format, uint32_t level, Image
 void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height, uint32_t mipLevel);
 
 void copyImageToBuffer(VkImage image, uint32_t width, uint32_t height, uint32_t mipLevel, VkBuffer buffer);
+
+void copyBufferToBuffer(VkBuffer src, VkDeviceSize srcSize, VkBuffer dst, VkDeviceSize dstSize);

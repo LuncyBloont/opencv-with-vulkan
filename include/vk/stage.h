@@ -1,6 +1,7 @@
 #pragma once
 
 #include "glm/fwd.hpp"
+#include "gpuBuf.h"
 #include "gpuMat.h"
 #include "opencv2/core/mat.hpp"
 #include "vulkan/vulkan_core.h"
@@ -8,6 +9,9 @@
 #include <stdint.h>
 #include <string>
 #include <vector>
+
+extern GPUBuffer* uniformSrcBuffer;
+extern GPUBuffer* uniformDstBuffer;
 
 class Stage;
 
@@ -56,6 +60,10 @@ private:
     VkShaderModule vertexShader;
     VkShaderModule fragmentShader;
 
+    GPUBuffer* uniformBuffer;
+
+    DefaultUniform uniform;
+
     uint32_t width;
     uint32_t height;
 
@@ -82,5 +90,9 @@ private:
     void buildRenderPass();
     void buildPipeline();
     void buildUniform();
+    void updateUniform();
     void cleanup();
 };
+
+void enableUnifromTransfer();
+void disableUnifromTransfer();

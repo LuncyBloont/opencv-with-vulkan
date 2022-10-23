@@ -3,6 +3,7 @@
 #include "gpuMat.h"
 #include "gpuMem.h"
 #include "helper.h"
+#include "stage.h"
 #include "vk/vkHelper.h"
 #include "vk/vkinfo.h"
 #include "vulkan/vulkan_core.h"
@@ -282,12 +283,16 @@ void initializeVulkan()
     createCommandPool();
 
     enableImageTransferBuffer();
+    enableUnifromTransfer();
+
     defaultLinearSampler = new GSampler(SampleUV::Repeat, SamplePoint::Linear);
 }
 
 void cleanupVulkan()
 {
     delete defaultLinearSampler;
+
+    disableUnifromTransfer();
     disableImageTransferBuffer();
 
     memoryDisable(gImgMemory);
