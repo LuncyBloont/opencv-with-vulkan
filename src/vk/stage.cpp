@@ -40,7 +40,7 @@ void disableMeshTransfer()
 Stage::Stage(uint32_t width, uint32_t height, StageProperties* assets) : width(width), height(height), assets(assets)
 {
     data = cv::Mat(height, width, CV_8UC4);
-    frame = new GPUMat(&data, WRITE_MAT, false, USE_SRGB);
+    frame = new GPUMat(&data, WRITE_MAT, false, USE_RAW);
 
     createShader();
 
@@ -109,9 +109,10 @@ void Stage::render(uint32_t newAge)
     vkCmdBindVertexBuffers(cmd, 0, 1, &vertexBuffer->buffer, vertexBindingOffsets);
     vkCmdBindIndexBuffer(cmd, indexBuffer->buffer, 0, VK_INDEX_TYPE_UINT32);
 
-    vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSet, 0, nullptr);
+    vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, 
+        pipelineLayout, 0, 1, &descriptorSet, 0, nullptr);
 
-    vkCmdDrawIndexed(cmd, mesh.index.size(), 1, 0, 0, 0);
+    vkCmdDrawIndexed(cmd, U32(mesh.index.size()), 1, 0, 0, 0);
 
     vkCmdEndRenderPass(cmd);
 
@@ -193,13 +194,13 @@ void Stage::buildUniform()
     bindings[0].pImmutableSamplers = nullptr;
     bindings[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
 
-    bindings[1].descriptorCount = 3;
+    bindings[1].descriptorCount = REFERENCE_COUNT;
     bindings[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     bindings[1].binding = 1;
     bindings[1].pImmutableSamplers = nullptr;
     bindings[1].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
-    bindings[2].descriptorCount = 3;
+    bindings[2].descriptorCount = TEXTURES_COUNT;
     bindings[2].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     bindings[2].binding = 2;
     bindings[2].pImmutableSamplers = nullptr;
@@ -220,7 +221,7 @@ void Stage::buildUniform()
     poolSizes[0].descriptorCount = 1;
     poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 
-    poolSizes[1].descriptorCount = 6;
+    poolSizes[1].descriptorCount = REFERENCE_COUNT + TEXTURES_COUNT;
     poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 
     descriptorPoolInfo.poolSizeCount = 2;
@@ -249,12 +250,53 @@ void Stage::updateUniform()
 {
     float time = clock() * 1.0f / CLOCKS_PER_SEC;
 
-    uniform.vector[6] = {
+    uniform.vector[8 + TEXTURES_COUNT + REFERENCE_COUNT] = {
         time,
         0.5f * time,
         time * 1000.0f,
         time * 500.0
     };
+
+    uniform.vector[8 + TEXTURES_COUNT + REFERENCE_COUNT + 1] = {
+        width,
+        height,
+        age,
+        age * 0.5f
+    };
+
+    for (uint32_t i = 0; i < REFERENCE_COUNT; ++i)
+    {
+        if (assets->reference[i])
+        {
+            uniform.vector[8 + i] = {
+                assets->reference[i]->width,
+                assets->reference[i]->height,
+                assets->reference[i]->frame->levels,
+                0.0f
+            };
+        }
+        else 
+        {
+            uniform.vector[8 + i] = { 0.0f, 0.0f, 0.0f, 0.0f };
+        }
+    }
+
+    for (uint32_t i = 0; i < TEXTURES_COUNT; ++i)
+    {
+        if (assets->textures[i])
+        {
+            uniform.vector[8 + i + REFERENCE_COUNT] = {
+                assets->textures[i]->cpuData->cols,
+                assets->textures[i]->cpuData->rows,
+                assets->textures[i]->levels,
+                0.0f
+            };
+        }
+        else 
+        {
+            uniform.vector[8 + i] = { 0.0f, 0.0f, 0.0f, 0.0f };
+        }
+    }
 
     writeUniform();
 }
@@ -288,14 +330,14 @@ void Stage::writeUniform()
     // update reference
 
     WRITE_DESCCRIPTOR writeReference{};
-    writeReference.descriptorCount = 3;
+    writeReference.descriptorCount = REFERENCE_COUNT;
     writeReference.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     writeReference.dstBinding = 1;
     writeReference.dstArrayElement = 0;
     writeReference.dstSet = descriptorSet;
     
-    VkDescriptorImageInfo referenceInfos[3];
-    for (uint32_t i = 0; i < 3; i++)
+    VkDescriptorImageInfo referenceInfos[REFERENCE_COUNT];
+    for (uint32_t i = 0; i < REFERENCE_COUNT; i++)
     {
         referenceInfos[i].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         referenceInfos[i].imageView = assets->reference[i] ? assets->reference[i]->frame->view : noneRefTexture->view;
@@ -309,14 +351,14 @@ void Stage::writeUniform()
     // update textures
 
     WRITE_DESCCRIPTOR writeTextures{};
-    writeTextures.descriptorCount = 3;
+    writeTextures.descriptorCount = TEXTURES_COUNT;
     writeTextures.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     writeTextures.dstBinding = 2;
     writeTextures.dstArrayElement = 0;
     writeTextures.dstSet = descriptorSet;
 
-    VkDescriptorImageInfo texturesInfo[3];
-    for (uint32_t i = 0; i < 3; i++)
+    VkDescriptorImageInfo texturesInfo[TEXTURES_COUNT];
+    for (uint32_t i = 0; i < TEXTURES_COUNT; i++)
     {
         texturesInfo[i].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         texturesInfo[i].imageView = assets->textures[i] ? assets->textures[i]->view : noneRefTexture->view;

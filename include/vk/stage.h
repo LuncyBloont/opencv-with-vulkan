@@ -4,6 +4,7 @@
 #include "gpuBuf.h"
 #include "gpuMat.h"
 #include "opencv2/core/mat.hpp"
+#include "vkenv.h"
 #include "vulkan/vulkan_core.h"
 #include <array>
 #include <stdint.h>
@@ -18,17 +19,17 @@ class Stage;
 
 struct StageProperties
 {
-    std::array<Stage*, 3> reference;
-    std::array<GPUMat*, 3> textures;
+    std::array<Stage*, REFERENCE_COUNT> reference;
+    std::array<GPUMat*, TEXTURES_COUNT> textures;
 
     std::array<glm::mat4x4, 8> uniMat;   
     std::array<glm::vec4, 8> uniVec; // custom vec4 x 8
 /* 
-system vec4 x 8:
-0 to 2: reference[0 to 2] info { width, height, mipmapLevel, 0.0 }    
-3 to 5: textures[0 to 2] info { width, height, mipmapLevel, 0.0 }   
-6: time { s, 1/2s, ms, 1/2ms }
-7: 
+system vec4 x (REFERENCE_COUNT + TEXTURES_COUNT + 1):
+0 to REFERENCE_COUNT - 1: reference[0 to REFERENCE_COUNT] info { width, height, mipmapLevel, 0.0 }    
+REFERENCE_COUNT to REFERENCE_COUNT + TEXTURES_COUNT - 1: textures[0 to TEXTURES_COUNT] info { width, height, mipmapLevel, 0.0 }   
+REFERENCE_COUNT + TEXTURES_COUNT: time { s, 1/2s, ms, 1/2ms }
+REFERENCE_COUNT + TEXTURES_COUNT + 1: { frame width, frame height, age, 1/2age } 
 */
 
     const std::string shaderPath;
@@ -39,7 +40,7 @@ system vec4 x 8:
 struct DefaultUniform
 {
     alignas(16) glm::mat4 matrix[8];
-    alignas(16) glm::vec4 vector[16];
+    alignas(16) glm::vec4 vector[8 + REFERENCE_COUNT + TEXTURES_COUNT + 2];
 };
 
 struct ScreenMesh

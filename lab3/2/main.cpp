@@ -22,7 +22,7 @@ int main()
 
     {
         
-        cv::Mat input = cv::imread("../dd.png");
+        cv::Mat input = cv::imread("../abbbg.jpg");
 
         GPUMat ginput(&input);
         ginput.apply();

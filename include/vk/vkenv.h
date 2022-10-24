@@ -10,6 +10,9 @@
 #define LAYERS_CONFIG "./vulkanLayers.ini"
 #define DEVICES_CONFIG "./deviceConfig.ini"
 
+#define REFERENCE_COUNT 3
+#define TEXTURES_COUNT 3
+
 extern VkInstance gVkInstance;
 
 extern VkPhysicalDevice gVkPhysicalDevice;
@@ -21,7 +24,7 @@ extern VkPhysicalDeviceProperties gVkPhysicalDeviceProperties;
 extern VkDebugUtilsMessengerEXT gVkDebuger;
 
 class GPUMem;
-class GPUMat;
+struct GPUMat;
 
 extern GPUMem* gImgMemory;
 extern GPUMem* gVertexMemory;
