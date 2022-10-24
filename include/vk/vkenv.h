@@ -1,6 +1,7 @@
 #pragma once
 
 #include "gpuMem.h"
+#include "opencv2/core/mat.hpp"
 #include "vulkan/vulkan_core.h"
 #include <vulkan/vulkan.h>
 #include <utility>
@@ -20,6 +21,7 @@ extern VkPhysicalDeviceProperties gVkPhysicalDeviceProperties;
 extern VkDebugUtilsMessengerEXT gVkDebuger;
 
 class GPUMem;
+class GPUMat;
 
 extern GPUMem* gImgMemory;
 extern GPUMem* gVertexMemory;
@@ -35,6 +37,10 @@ extern uint32_t gVkGraphicsIndice;
 
 extern VkQueue gVkGraphicsQueue;
 
+extern GPUMat* noneRefTexture;
+
+extern cv::Mat noneRefDate;
+
 #define assertVkEnv trydo(true) = (gVkInstance != VK_NULL_HANDLE)
 
 void initializeVulkan();
@@ -42,4 +48,4 @@ void initializeVulkan();
 void cleanupVulkan();
 
 VkCommandBuffer beginCommandOnce();
-void endCommandOnce(VkCommandBuffer cmdBuf);
+void endCommandOnce(VkCommandBuffer cmdBuf, VkFence fence = VK_NULL_HANDLE);

@@ -261,12 +261,12 @@ VKINFO_DECLARE(VkRenderPassCreateInfo, DEFAULT_RENDERPASS,
 
 VKINFO_DECLARE(VkGraphicsPipelineCreateInfo, GRAPHICS_PIPELINE, 
     this->basePipelineHandle = VK_NULL_HANDLE;
-    this->basePipelineIndex = 0;
+    this->basePipelineIndex = -1;
     this->flags = 0;
     this->layout = VK_NULL_HANDLE;
     this->pNext = nullptr;
     this->sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-    this->stageCount = 2;
+    this->stageCount = 0;
     this->pStages = nullptr;
     this->pColorBlendState = nullptr;
     this->pDepthStencilState = nullptr;
@@ -336,6 +336,7 @@ VKINFO_DECLARE(VkPipelineColorBlendStateCreateInfo, NO_BLEND_STATE,
     this->logicOp = VK_LOGIC_OP_AND;
     this->logicOpEnable = VK_FALSE;
     this->pAttachments = nullptr;
+    this->pNext = nullptr;
 );
 
 VKINFO_DECLARE(VkPipelineDepthStencilStateCreateInfo, DEFAULT_DEPTHSTECNIL_STATE,
@@ -418,7 +419,7 @@ VKINFO_DECLARE(VkPipelineShaderStageCreateInfo, SHADER_STAGES,
     this->module = VK_NULL_HANDLE;
     this->pNext = nullptr;
     this->sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-    this->pName = "_stage_enter_";
+    this->pName = "main";
 );
 
 VKINFO_DECLARE(VkShaderModuleCreateInfo, SHADER_INFO, 
@@ -475,6 +476,34 @@ VKINFO_DECLARE(VkWriteDescriptorSet, WRITE_DESCCRIPTOR,
     this->pNext = nullptr;
     this->pTexelBufferView = nullptr;
     this->sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+);
+
+VKINFO_DECLARE(VkFenceCreateInfo, VKFENCE,
+    this->flags = 0;
+    this->pNext = nullptr;
+    this->sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+);
+
+VKINFO_DECLARE(VkRenderPassBeginInfo, RENDERPASS_BEGIN,
+    this->renderPass = VK_NULL_HANDLE;
+    this->renderArea = { { 0, 0 }, { 0, 0 } };
+    this->clearValueCount = 0;
+    this->pClearValues = nullptr;
+    this->framebuffer = VK_NULL_HANDLE;
+    this->pNext = nullptr;
+    this->sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+);
+
+VKINFO_DECLARE(VkFramebufferCreateInfo, FRAMEBUFFER_INFO,
+    this->attachmentCount = 0;
+    this->pAttachments = nullptr;
+    this->flags = 0;
+    this->height = 64;
+    this->width = 64;
+    this->layers = 1;
+    this->pNext = nullptr;
+    this->renderPass = VK_NULL_HANDLE;
+    this->sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 );
 
 #undef VKINFO_DECLARE

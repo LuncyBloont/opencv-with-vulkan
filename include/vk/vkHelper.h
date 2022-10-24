@@ -12,7 +12,7 @@
 
 #define U32 uint32_t
 
-#define MAX_SHADER_SIZE (1024 * 1024 * 10)
+#define MAX_SHADER_SIZE (1024 * 1024 * 40)
 
 template<typename T>
 struct Try

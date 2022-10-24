@@ -1,35 +1,39 @@
 #include "vkHelper.h"
 #include "vkenv.h"
 #include "vkinfo.h"
+#include "vulkan/vulkan_core.h"
 #include <stdexcept>
 #include <stdint.h>
-
-uint32_t* codeBuffer = new uint32_t[MAX_SHADER_SIZE];
+#include <vcruntime.h>
+#include <vcruntime_string.h>
+#include <vector>
 
 void readShader(VkShaderModule& shader, std::string fname)
 {
-    uint32_t size = 0;
+    std::vector<char> codes;
 
     SHADER_INFO info{};
 
-    std::ifstream file(fname, std::ios::in);
+    std::ifstream file(fname, std::ios::in | std::ios::binary);
     if (!file.is_open())
     {
         std::cerr << "\033[31mFailed to read shader file (" << fname << ")\n\033[0m";
         throw std::runtime_error("read shader");
     }
 
-    uint32_t* p = codeBuffer;
-
-    while (!file.eof() && p != codeBuffer + MAX_SHADER_SIZE)
+    while (file.peek() != EOF)
     {
-        file.read(reinterpret_cast<char*>(p), sizeof(uint32_t) / sizeof(char));
-        size += sizeof(uint32_t);
-        p++;
+        char p;
+        file.read(&p, 1);
+        codes.push_back(p);
     }
 
-    info.codeSize = size;
-    info.pCode = codeBuffer;
+    file.close();
+
+    info.codeSize = codes.size();
+    info.pCode = reinterpret_cast<uint32_t*>(codes.data());
+
+    Log("Load shader %s (size: %llu)\n", CSTR(fname), info.codeSize);
     
-    vkCreateShaderModule(gVkDevice, &info, GVKALC, &shader);
+    trydo(VK_SUCCESS) = vkCreateShaderModule(gVkDevice, &info, GVKALC, &shader);
 }

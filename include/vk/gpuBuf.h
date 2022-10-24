@@ -11,7 +11,7 @@ struct GPUBuffer
 
     void* data;
 
-    explicit GPUBuffer(VkDeviceSize size, VkBufferUsageFlags usage);
+    explicit GPUBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkBufferUsageFlags transferUsage = 0);
     virtual ~GPUBuffer();
 
     void mapMem();

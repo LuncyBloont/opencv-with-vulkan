@@ -1,8 +1,13 @@
 #include "vk/vkenv.h"
 #include "configMgr.hpp"
+#include "glm/common.hpp"
+#include "glm/fwd.hpp"
 #include "gpuMat.h"
 #include "gpuMem.h"
 #include "helper.h"
+#include "opencv2/core/hal/interface.h"
+#include "opencv2/core/mat.hpp"
+#include "shader.h"
 #include "stage.h"
 #include "vk/vkHelper.h"
 #include "vk/vkinfo.h"
@@ -42,6 +47,10 @@ VkCommandPool gVkCommandPool = nullptr;
 uint32_t gVkGraphicsIndice = 0;
 
 VkQueue gVkGraphicsQueue = VK_NULL_HANDLE;
+
+GPUMat* noneRefTexture = nullptr;
+
+cv::Mat noneRefDate;
 
 void setupVkDebug()
 {
@@ -284,14 +293,30 @@ void initializeVulkan()
 
     enableImageTransferBuffer();
     enableUnifromTransfer();
+    enableMeshTransfer();
 
     defaultLinearSampler = new GSampler(SampleUV::Repeat, SamplePoint::Linear);
+
+    // create default texture
+    noneRefDate.create(512, 512, CV_8UC3);
+    process<U8>(noneRefDate, [&](glm::vec2 uv) {
+        glm::vec4 c0 = glm::vec4(1.0f, 0.0f, 1.0f, 1.0f);
+        glm::vec4 c1 = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+        glm::vec2 xy = uv * glm::vec2(noneRefDate.cols, noneRefDate.rows) / 32.0f;
+        float lerp = float((int(xy.x) % 2 ^ (int(xy.y) % 2)));
+        return glm::mix(c0, c1, lerp);
+    });
+    noneRefTexture = new GPUMat(&noneRefDate, READ_MAT, true, USE_RAW);
+    noneRefTexture->apply();
 }
 
 void cleanupVulkan()
 {
+    delete noneRefTexture;
+
     delete defaultLinearSampler;
 
+    disableMeshTransfer();
     disableUnifromTransfer();
     disableImageTransferBuffer();
 
@@ -323,7 +348,7 @@ VkCommandBuffer beginCommandOnce()
     return cmdBuf;
 }
 
-void endCommandOnce(VkCommandBuffer cmdBuf)
+void endCommandOnce(VkCommandBuffer cmdBuf, VkFence fence)
 {
     vkEndCommandBuffer(cmdBuf);
 
@@ -331,8 +356,17 @@ void endCommandOnce(VkCommandBuffer cmdBuf)
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &cmdBuf;
     
-    vkQueueSubmit(gVkGraphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
-    vkQueueWaitIdle(gVkGraphicsQueue);
+    if (fence != VK_NULL_HANDLE)
+    {
+        vkQueueSubmit(gVkGraphicsQueue, 1, &submitInfo, fence);
+        vkWaitForFences(gVkDevice, 1, &fence, VK_TRUE, UINT64_MAX);
+        vkResetFences(gVkDevice, 1, &fence);
+    }
+    else
+    {
+        vkQueueSubmit(gVkGraphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
+        vkQueueWaitIdle(gVkGraphicsQueue);
+    }
 
     vkFreeCommandBuffers(gVkDevice, gVkCommandPool, 1, &cmdBuf);
 }

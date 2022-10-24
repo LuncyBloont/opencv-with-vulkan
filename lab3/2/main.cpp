@@ -27,10 +27,12 @@ int main()
         GPUMat ginput(&input);
         ginput.apply();
 
-        Stage goutput(input.cols, input.rows, {
+        StageProperties assets = {
             {}, { &ginput }, {}, {},
             "../shaders/distorting.spv"
-        });
+        };
+
+        Stage goutput(input.cols, input.rows, &assets);
 
         uint32_t age = 1;
         while (true) {

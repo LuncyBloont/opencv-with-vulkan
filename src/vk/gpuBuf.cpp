@@ -6,11 +6,11 @@
 #include "vulkan/vulkan_core.h"
 #include <stdexcept>
 
-GPUBuffer::GPUBuffer(VkDeviceSize size, VkBufferUsageFlags usage)
+GPUBuffer::GPUBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkBufferUsageFlags transferUsage)
 {
     DEFAULT_BUFFER bufInfo{};
     bufInfo.size = size;
-    bufInfo.usage = usage;
+    bufInfo.usage = usage | transferUsage;
 
     this->usage = usage;
 

@@ -11,7 +11,8 @@
 #include <vector>
 
 extern GPUBuffer* uniformSrcBuffer;
-extern GPUBuffer* uniformDstBuffer;
+
+extern GPUBuffer* meshSrcBuffer;
 
 class Stage;
 
@@ -30,16 +31,33 @@ system vec4 x 8:
 7: 
 */
 
-    std::string shaderPath;
+    const std::string shaderPath;
     
-    std::string customVertexShader = "../defaultVS/screenRect.spv";
+    const std::string customVertexShader = "../defaultVS/screenRect.spv";
 };
 
 struct DefaultUniform
 {
     alignas(16) glm::mat4 matrix[8];
-    alignas(16) glm::vec4 vector[8];
+    alignas(16) glm::vec4 vector[16];
 };
+
+struct ScreenMesh
+{
+    std::vector<glm::vec4> vertexData = {
+        { -1.0f, -1.0f, 0.0f, 1.0f }, { 0.0f, 0.0f, 0.0f, 1.0f },
+        { 1.0f, -1.0f, 0.0f, 1.0f }, { 1.0f, 0.0f, 0.0f, 1.0f },
+        { 1.0f, 1.0f, 0.0f, 1.0f }, { 1.0f, 1.0f, 0.0f, 1.0f },
+        { -1.0f, 1.0f, 0.0f, 1.0f }, { 0.0f, 1.0f, 0.0f, 1.0f }
+        // pos, uv
+    };
+    std::vector<uint32_t> index {
+        0, 1, 2, 3,
+        UINT32_MAX
+    };
+};
+
+#define SCREEN_VERTEX_SIZE (sizeof(glm::vec4) * 2)
 
 class Stage
 {
@@ -60,7 +78,13 @@ private:
     VkShaderModule vertexShader;
     VkShaderModule fragmentShader;
 
+    VkFence fence;
+
     GPUBuffer* uniformBuffer;
+    GPUBuffer* vertexBuffer;
+    GPUBuffer* indexBuffer;
+
+    ScreenMesh mesh;
 
     DefaultUniform uniform;
 
@@ -69,11 +93,11 @@ private:
 
     uint32_t age = 0;
 
-    StageProperties assets;
+    StageProperties* assets;
 
 public:
 
-    explicit Stage(uint32_t width, uint32_t height, const StageProperties& assets);
+    explicit Stage(uint32_t width, uint32_t height, StageProperties* assets);
     virtual ~Stage();
 
     Stage(const Stage& o) = delete;
@@ -88,11 +112,17 @@ private:
     void createShader();
     void createPipelineLayout();
     void buildRenderPass();
+    void createFramebuffer();
     void buildPipeline();
     void buildUniform();
     void updateUniform();
+    void writeUniform();
+    void createEtc();
     void cleanup();
 };
 
 void enableUnifromTransfer();
 void disableUnifromTransfer();
+
+void enableMeshTransfer();
+void disableMeshTransfer();

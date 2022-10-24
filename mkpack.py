@@ -3,7 +3,7 @@ from genericpath import isdir
 import os
 import shutil
 
-smtDir = './submitPack'
+smtDir = '../VulkanCV_SubmitPack'
 
 print('level 1 directory: ', end='')
 l1dir = input()

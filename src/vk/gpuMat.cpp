@@ -209,7 +209,7 @@ void GPUMat::apply()
     }
     else
     {
-        transitionImageLayout(image, format, 0, { VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL });
+        transitionImageLayout(image, format, 0, { VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL });
 
         copyImageToBuffer(image, cpuData->cols, cpuData->rows, 0, imageReadFromGPUBuffer->buffer);
 

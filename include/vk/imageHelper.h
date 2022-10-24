@@ -16,4 +16,4 @@ void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t 
 
 void copyImageToBuffer(VkImage image, uint32_t width, uint32_t height, uint32_t mipLevel, VkBuffer buffer);
 
-void copyBufferToBuffer(VkBuffer src, VkDeviceSize srcSize, VkBuffer dst, VkDeviceSize dstSize);
+void copyBufferToBuffer(VkBuffer src, VkBuffer dst, VkDeviceSize size);
