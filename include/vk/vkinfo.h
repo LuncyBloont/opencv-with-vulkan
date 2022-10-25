@@ -1,9 +1,8 @@
-#pragma once
+#ifndef CVVK_VK_VKINFO_H
+#define CVVK_VK_VKINFO_H
 
 #include "gpuMem.h"
 #include "helper.h"
-#include "vk/vkinfo.h"
-#include "vkinfo.h"
 #include "vulkan/vulkan_core.h"
 #include <iostream>
 #include <cstdint>
@@ -507,3 +506,4 @@ VKINFO_DECLARE(VkFramebufferCreateInfo, FRAMEBUFFER_INFO,
 );
 
 #undef VKINFO_DECLARE
+#endif

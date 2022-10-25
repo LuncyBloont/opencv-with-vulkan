@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CVVK_VK_VKENV_H
+#define CVVK_VK_VKENV_H
 
 #include "gpuMem.h"
 #include "opencv2/core/mat.hpp"
@@ -52,3 +53,5 @@ void cleanupVulkan();
 
 VkCommandBuffer beginCommandOnce();
 void endCommandOnce(VkCommandBuffer cmdBuf, VkFence fence = VK_NULL_HANDLE);
+
+#endif

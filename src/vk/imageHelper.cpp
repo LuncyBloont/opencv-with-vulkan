@@ -2,6 +2,7 @@
 #include "vkenv.h"
 #include "vulkan/vulkan_core.h"
 #include <stdint.h>
+#include "vkinfo.h"
 
 GPUBuffer* imageTransferBuffer = nullptr;
 GPUBuffer* imageReadFromGPUBuffer = nullptr;

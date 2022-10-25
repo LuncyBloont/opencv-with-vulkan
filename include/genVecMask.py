@@ -1,6 +1,6 @@
 #! /usr/bin/python3
 
-code = '#pragma once\n#include "glm/glm.hpp"\n'
+code = '#ifndef CVVK_GLSLSTYLE_HPP\n#define CVVK_GLSLSTYLE_HPP\n#include "glm/glm.hpp"\n'
 
 def app(s):
     global code
@@ -35,6 +35,8 @@ app('\n\n'.join([ (
             ) for b in range(pow(i, j)) ])
         ) for j in range(1, i + 1) ])
     ) for i in range(2, 5) ]))
+
+app("#endif")
 
 with open('./include/glslStyle.hpp', 'w') as f:
     f.write(code)

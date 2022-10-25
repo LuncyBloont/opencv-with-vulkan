@@ -16,7 +16,7 @@
 
 GSampler* defaultLinearSampler = nullptr;
 
-void generateMipmaps(const cv::Mat& level0, std::vector<cv::Mat>& mipmaps, uint32_t levels)
+void generateMipmaps(const cv::Mat& level0, std::vector<cv::Mat>& mipmaps, uint32_t levels, bool HDR)
 {
     mipmaps.clear();
     mipmaps.resize(levels - 1);
@@ -28,18 +28,36 @@ void generateMipmaps(const cv::Mat& level0, std::vector<cv::Mat>& mipmaps, uint3
             level0.type());
         const cv::Mat& ref = i == 1 ? level0 : mipmaps[i - 2];
         glm::vec3 offset = glm::vec3(1.0f / ref.cols, 1.0f / ref.rows, 0.0f);
-        process<U8>(mipmaps[i - 1], [&](glm::vec2 uv) {
-            return (
-                texelFetch<U8>(ref, uv + _zz(offset)) +
-                texelFetch<U8>(ref, uv + _xz(offset)) + 
-                texelFetch<U8>(ref, uv + _zy(offset)) + 
-                texelFetch<U8>(ref, uv + _xy(offset))
-            ) * 0.25f;
-        });
+        
+        if (HDR)
+        {
+            auto shader = [&](glm::vec2 uv) {
+                return (
+                    texelFetch<float, HDR_MAX>(ref, uv + _zz(offset)) +
+                    texelFetch<float, HDR_MAX>(ref, uv + _xz(offset)) + 
+                    texelFetch<float, HDR_MAX>(ref, uv + _zy(offset)) + 
+                    texelFetch<float, HDR_MAX>(ref, uv + _xy(offset))
+                ) * 0.25f;
+            };
+            process<float, HDR_MAX>(mipmaps[i - 1], shader);
+        }
+        else  
+        {
+            auto shader = [&](glm::vec2 uv) {
+                return (
+                    texelFetch<U8>(ref, uv + _zz(offset)) +
+                    texelFetch<U8>(ref, uv + _xz(offset)) + 
+                    texelFetch<U8>(ref, uv + _zy(offset)) + 
+                    texelFetch<U8>(ref, uv + _xy(offset))
+                ) * 0.25f;
+            };
+            process<U8>(mipmaps[i - 1], shader);
+        }
     }
 }
 
-GPUMat::GPUMat(cv::Mat* mat, bool readable, bool genMip , bool srgb) : cpuData(mat), readable(readable), srgb(srgb)
+GPUMat::GPUMat(cv::Mat* mat, bool readable, bool genMip , bool srgb, bool HDR) : 
+    cpuData(mat), readable(readable), srgb(srgb), HDR(HDR)
 {
     assertVkEnv;
 
@@ -52,31 +70,39 @@ GPUMat::GPUMat(cv::Mat* mat, bool readable, bool genMip , bool srgb) : cpuData(m
     levels = genMip ? mipLevel(mat->cols, mat->rows) : 1;
     imgInfo.mipLevels = levels;
 
-    if (mat->channels() == 3)
+    if (!HDR)
     {
-        cv::Mat tmp;
-        createMatC4<U8>(tmp, *mat);
-        *mat = tmp;
+        switch (mat->channels()) {
+            case 1:
+                imgInfo.format = srgb ? VK_FORMAT_R8_SRGB : VK_FORMAT_R8_UNORM;
+                break;
+            case 2:
+                imgInfo.format = srgb ? VK_FORMAT_R8G8_SRGB : VK_FORMAT_R8G8_UNORM;
+                break;
+            case 3:
+                imgInfo.format = srgb ? VK_FORMAT_R8G8B8A8_SRGB : VK_FORMAT_R8G8B8A8_UNORM;
+                break;
+            case 4:
+                imgInfo.format = srgb ? VK_FORMAT_R8G8B8A8_SRGB : VK_FORMAT_R8G8B8A8_UNORM;
+                break;
+        }
     }
-
-    if (readable == READ_MAT)
+    else
     {
-        generateMipmaps(*cpuData, mipmaps, levels);
-    }
-
-    switch (mat->channels()) {
-        case 1:
-            imgInfo.format = srgb ? VK_FORMAT_R8_SRGB : VK_FORMAT_R8_UNORM;
-            break;
-        case 2:
-            imgInfo.format = srgb ? VK_FORMAT_R8G8_SRGB : VK_FORMAT_R8G8_UNORM;
-            break;
-        case 3:
-            imgInfo.format = srgb ? VK_FORMAT_R8G8B8A8_SRGB : VK_FORMAT_R8G8B8A8_UNORM;
-            break;
-        case 4:
-            imgInfo.format = srgb ? VK_FORMAT_R8G8B8A8_SRGB : VK_FORMAT_R8G8B8A8_UNORM;
-            break;
+        switch (mat->channels()) {
+            case 1:
+                imgInfo.format = VK_FORMAT_R32_SFLOAT;
+                break;
+            case 2:
+                imgInfo.format = VK_FORMAT_R32G32_SFLOAT;
+                break;
+            case 3:
+                imgInfo.format = VK_FORMAT_R32G32B32A32_SFLOAT;
+                break;
+            case 4:
+                imgInfo.format = VK_FORMAT_R32G32B32A32_SFLOAT;
+                break;
+        }
     }
 
     if (readable == READ_MAT)
@@ -123,12 +149,10 @@ GPUMat::~GPUMat()
     vkDestroyImage(gVkDevice, image, GVKALC);
 }
 
-
 typedef std::pair<VkImageLayout, VkImageLayout> ImageLayoutTransition;
 
 void transitionImageLayout(VkImage image, VkFormat format, ImageLayoutTransition transition)
 {
-
     VkCommandBuffer cmd = beginCommandOnce();
 
     IMAGE_BARRIER barrier{};
@@ -181,6 +205,23 @@ void transitionImageLayout(VkImage image, VkFormat format, ImageLayoutTransition
 
 void GPUMat::apply()
 {
+    
+    if (cpuData->channels() == 3)
+    {
+        cv::Mat tmp;
+        if (!HDR)
+        {
+            createMatC4<U8>(tmp, *cpuData);
+        }
+        else
+        {
+            createMatC4<float, HDR_MAX>(tmp, *cpuData);
+        }
+        *cpuData = tmp;
+    }
+
+    generateMipmaps(*cpuData, mipmaps, levels, HDR);
+
     if (readable == READ_MAT)
     {
         transitionImageLayout(image, format, 0, { VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL });

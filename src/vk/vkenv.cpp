@@ -298,10 +298,10 @@ void initializeVulkan()
     defaultLinearSampler = new GSampler(SampleUV::Repeat, SamplePoint::Linear);
 
     // create default texture
-    noneRefDate.create(512, 512, CV_8UC3);
+    noneRefDate.create(512, 512, CV_8UC2);
     process<U8>(noneRefDate, [&](glm::vec2 uv) {
-        glm::vec4 c0 = glm::vec4(1.0f, 0.0f, 1.0f, 1.0f);
-        glm::vec4 c1 = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+        glm::vec4 c0 = glm::vec4(1.0f, 0.2f, 1.0f, 1.0f);
+        glm::vec4 c1 = glm::vec4(0.1f, 0.1f, 0.1f, 1.0f);
         glm::vec2 xy = uv * glm::vec2(noneRefDate.cols, noneRefDate.rows) / 32.0f;
         float lerp = float((int(xy.x) % 2 ^ (int(xy.y) % 2)));
         return glm::mix(c0, c1, lerp);

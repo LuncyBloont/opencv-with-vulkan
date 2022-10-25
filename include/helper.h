@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CVVK_HELPER_H
+#define CVVK_HELPER_H
 
 #include "glm/glm.hpp"
 #include <cstdio>
@@ -85,3 +86,5 @@ std::string _any_to_string(const T& t)
 
 #define CSTR(s) _any_to_string(s).c_str()
 #define STR(s) _any_to_string(s)
+
+#endif

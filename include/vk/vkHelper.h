@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CVVK_VK_VKHELPER_H
+#define CVVK_VK_VKHELPER_H
 
 #include "helper.h"
 #include "glm/common.hpp"
@@ -64,3 +65,5 @@ inline uint32_t toMipmapSize(uint32_t size, uint32_t level)
 }
 
 void readShader(VkShaderModule& shader, std::string fname);
+
+#endif

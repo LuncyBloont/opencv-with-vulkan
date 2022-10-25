@@ -1,6 +1,6 @@
-#pragma once
+#ifndef CVVK_CONFIGMGR_HPP
+#define CVVK_CONFIGMGR_HPP
 
-#include "configMgr.hpp"
 #include "helper.h"
 #include <cctype>
 #include <fstream>
@@ -214,3 +214,5 @@ inline void print(const std::string& title, const std::vector<ConfigItem>& confi
         Log("    %s\n", CSTR(item));
     }
 }
+
+#endif

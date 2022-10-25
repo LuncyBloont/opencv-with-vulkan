@@ -14,7 +14,7 @@ void markTime()
 
 void endMark(const char* msg)
 {
-    std::printf(msg, (clock() - markedTime) * 1.0f / CLOCKS_PER_SEC);
+    Log(msg, (clock() - markedTime) * 1.0f / CLOCKS_PER_SEC);
     markedTime = clock();
 }
 

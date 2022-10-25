@@ -21,21 +21,25 @@ int main()
     initializeVulkan();
 
     {
+        cv::VideoCapture video("../0.webm");
         
-        cv::Mat input = cv::imread("../abbbg.jpg");
+        cv::Mat input;
+        video >> input;
 
-        GPUMat ginput(&input);
+        GPUMat ginput(&input, READ_MAT, false, USE_RAW);
         ginput.apply();
 
         StageProperties assets = {
             {}, { &ginput }, {}, {},
-            "../shaders/distorting.spv"
+            "../shaders/scaleVideo.spv"
         };
 
         Stage goutput(input.cols, input.rows, &assets);
 
         uint32_t age = 1;
         while (true) {
+            video >> input;
+            ginput.apply();
 
             goutput.render(age);
 

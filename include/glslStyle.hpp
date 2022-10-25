@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CVVK_GLSLSTYLE_HPP
+#define CVVK_GLSLSTYLE_HPP
 #include "glm/glm.hpp"
 
 inline float _x(const glm::vec2& v) { return float(v.x); }
@@ -773,3 +774,4 @@ inline glm::vec4 _wwwz(const glm::vec4& v) { return glm::vec4(v.w, v.w, v.w, v.z
 inline glm::vec4 _aaab(const glm::vec4& v) { return glm::vec4(v.a, v.a, v.a, v.b); }
 inline glm::vec4 _wwww(const glm::vec4& v) { return glm::vec4(v.w, v.w, v.w, v.w); }
 inline glm::vec4 _aaaa(const glm::vec4& v) { return glm::vec4(v.a, v.a, v.a, v.a); }
+#endif

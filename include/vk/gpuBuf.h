@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CVVK_VK_GPUBUF_H
+#define CVVK_VK_GPUBUF_H
 
 #include "vulkan/vulkan_core.h"
 
@@ -22,3 +23,5 @@ struct GPUBuffer
     GPUBuffer& operator=(const GPUBuffer& other) = delete;
     GPUBuffer& operator=(const GPUBuffer&& other) = delete;
 };
+
+#endif

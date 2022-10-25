@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CVVK_VK_STAGE_H
+#define CVVK_VK_STAGE_H
 
 #include "glm/fwd.hpp"
 #include "gpuBuf.h"
@@ -127,3 +128,5 @@ void disableUnifromTransfer();
 
 void enableMeshTransfer();
 void disableMeshTransfer();
+
+#endif

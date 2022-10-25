@@ -2,51 +2,31 @@
 
 precision highp float;
 
-#define REF_CNT 3
-#define TEX_CNT 3
+#extension GL_GOOGLE_include_directive : require
 
-layout (location = 0) in vec4 position;
-layout (location = 1) in vec4 uv;
+#include "../shaderLib/templateHead.frag.glsl"
 
-layout (binding = 0) uniform UniObject {
-    mat4 mats[8];
-    vec4 vecs[8 + 2 + REF_CNT + TEX_CNT];
-} uni;
-
-layout (binding = 1) uniform sampler2D references[REF_CNT];
-layout (binding = 2) uniform sampler2D textures[TEX_CNT];
-
-layout(location = 0) out vec4 outColor;
-
-#define ref0 (references[0])
-#define ref1 (references[1])
-#define ref2 (references[2])
-
-#define tex0 (textures[0])
-#define tex1 (textures[1])
-#define tex2 (textures[2])
-
-#define time (uni.vecs[REF_CNT + TEX_CNT + 8])
-#define frame (uni.vecs[REF_CNT + TEX_CNT + 1 + 8])
-
-#define matLib (uni.mats)
-#define vecLib (uni.vecs)
-
-#define ref0Info (uni.vecs[8 + 0])
-#define ref1Info (uni.vecs[8 + 1])
-#define ref2Info (uni.vecs[8 + 2])
-
-#define tex0Info (uni.vecs[8 + REF_CNT + 0])
-#define tex1Info (uni.vecs[8 + REF_CNT + 1])
-#define tex2Info (uni.vecs[8 + REF_CNT + 2])
+#define SIZE 8
 
 void frag(in vec4 fragCoord, out vec4 fragColor)
 {
-    fragColor = texelFetch(tex0, ivec2(fragCoord.zw + vec2(time.x * 30.0, 0.0)), 0);
+    vec4 sum = vec4(0.0);
+    float base = 0.0;
+    for (int i = -SIZE; i < SIZE; ++i)
+    {
+        for (int j = -SIZE; j < SIZE; ++j)
+        {
+            ivec2 pos = ivec2(fragCoord.zw) + ivec2(i, j);
+            if (pos.x < 0 || pos.y < 0 || pos.x >= tex0Info.x || pos.y >= tex0Info.y)
+            {
+                continue;
+            }
+            sum += texelFetch(tex0, pos, 0);
+            base += 1.0;
+        }
+    }
+
+    fragColor = sum / base;
 }
 
-void main()
-{
-    vec4 coord = vec4(uv.xy, uv.xy * frame.xy);
-    frag(coord, outColor);
-}
+#include "../shaderLib/templateEnd.frag.glsl"

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CVVK_VK_GPU_MEME_H
+#define CVVK_VK_GPU_MEME_H
 
 #include "vulkan/vulkan_core.h"
 #include <cstdint>
@@ -6,7 +7,6 @@
 #include <stdint.h>
 #include <vulkan/vulkan.h>
 #include "vkHelper.h"
-#include "vkinfo.h"
 
 #define DEFAULT_T_MEM_SIZE (32 * 1024 * 1024 * 4 * 2)
 #define DEFAULT_V_MEM_SIZE (10000 * 4 * 4 * 16 * 8 * 32)
@@ -71,3 +71,5 @@ inline void memoryDisable(GPUMem*& mem)
 }
 
 uint32_t findMemoryIndex(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+
+#endif

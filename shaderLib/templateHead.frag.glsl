@@ -1,12 +1,13 @@
-#version 420
-
-precision highp float;
+#ifndef TEMPLATE_HEAD_GLSL
+#define TEMPLATE_HEAD_GLSL
 
 #define REF_CNT 3
 #define TEX_CNT 3
 
-layout (location = 0) in vec4 position;
-layout (location = 1) in vec4 uv;
+precision highp float;
+
+layout(location = 0) in vec4 position;
+layout(location = 1) in vec4 uv;
 
 layout (binding = 0) uniform UniObject {
     mat4 mats[8];
@@ -40,13 +41,6 @@ layout(location = 0) out vec4 outColor;
 #define tex1Info (uni.vecs[8 + REF_CNT + 1])
 #define tex2Info (uni.vecs[8 + REF_CNT + 2])
 
-void frag(in vec4 fragCoord, out vec4 fragColor)
-{
-    fragColor = texelFetch(tex0, ivec2(fragCoord.zw + vec2(time.x * 30.0, 0.0)), 0);
-}
+void frag(in vec4 fragCoord, out vec4 fragColor);
 
-void main()
-{
-    vec4 coord = vec4(uv.xy, uv.xy * frame.xy);
-    frag(coord, outColor);
-}
+#endif

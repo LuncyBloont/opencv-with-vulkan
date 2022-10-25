@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CVVK_VK_IMAGE_HELPER_H
+#define CVVK_VK_IMAGE_HELPER_H
 
 #include "gpuBuf.h"
 #include "vkenv.h"
@@ -17,3 +18,5 @@ void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t 
 void copyImageToBuffer(VkImage image, uint32_t width, uint32_t height, uint32_t mipLevel, VkBuffer buffer);
 
 void copyBufferToBuffer(VkBuffer src, VkBuffer dst, VkDeviceSize size);
+
+#endif
