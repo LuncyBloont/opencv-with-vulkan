@@ -170,6 +170,8 @@ void Stage::createShader()
     readShader(fragmentShader, assets->shaderPath);
 }
 
+GPUMat* Stage::getGPUMat() { return frame; }
+
 void Stage::createPipelineLayout()
 {
     PIPELINE_LAYOUT layoutInfo{};
@@ -286,8 +288,8 @@ void Stage::updateUniform()
         if (assets->textures[i])
         {
             uniform.vector[8 + i + REFERENCE_COUNT] = {
-                assets->textures[i]->cpuData->cols,
-                assets->textures[i]->cpuData->rows,
+                assets->textures[i]->width(),
+                assets->textures[i]->height(),
                 assets->textures[i]->levels,
                 0.0f
             };

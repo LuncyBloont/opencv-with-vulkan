@@ -1,6 +1,7 @@
 
 import os
 import re
+import time
 
 compiler_path = 'Path to glslc'
 
@@ -16,6 +17,8 @@ folders = [
     './defaultVS/',
     './shaders/'
 ]
+
+lastCompile = {}
 
 template = './shaderLib/fragTemplate.stp'
 tmp_file = './build-shader/.tmp.frag'
@@ -38,6 +41,9 @@ def compile(path: str):
 
     print('run: ' + command)
 
+    global lastCompile
+    lastCompile[path] = os.path.getmtime(path)
+
     result = os.system(command)
 
     if result != 0:
@@ -54,3 +60,19 @@ def compile_folder(dirname):
 for dir in folders:
     compile_folder(dir)
 
+t = 60
+
+while True:
+    time.sleep(1)
+    hasNew = False
+    for f in lastCompile:
+        if os.path.getmtime(f) > lastCompile[f]:
+            lastCompile[f] = os.path.getmtime(f)
+            hasNew = True 
+            break
+    
+    if hasNew or t <= 0:
+        for dir in folders:
+            compile_folder(dir)
+        t = 60
+    t -= 1

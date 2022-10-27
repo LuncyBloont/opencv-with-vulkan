@@ -61,6 +61,9 @@ struct GPUMat
     GPUMat(const GPUMat&&) = delete;
     GPUMat& operator =(const GPUMat&) = delete;
     GPUMat& operator =(const GPUMat&&) = delete;
+
+    uint32_t width() const;
+    uint32_t height() const;
 };
 
 template <typename Int, int32_t MAX>

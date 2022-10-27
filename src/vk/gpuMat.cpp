@@ -203,6 +203,9 @@ void transitionImageLayout(VkImage image, VkFormat format, ImageLayoutTransition
     endCommandOnce(cmd);
 }
 
+uint32_t GPUMat::width() const { return uint32_t(cpuData->cols); }
+uint32_t GPUMat::height() const { return uint32_t(cpuData->rows); }
+
 void GPUMat::apply()
 {
     
@@ -230,7 +233,7 @@ void GPUMat::apply()
         memcpy(imageTransferBuffer->data, cpuData->data, cpuData->total() * cpuData->elemSize());
         imageTransferBuffer->unmapMem();
 
-        copyBufferToImage(imageTransferBuffer->buffer, image, cpuData->cols, cpuData->rows, 0);
+        copyBufferToImage(imageTransferBuffer->buffer, image, width(), height(), 0);
 
         transitionImageLayout(image, format, 0, { VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL });
 
@@ -243,7 +246,7 @@ void GPUMat::apply()
             memcpy(imageTransferBuffer->data, mipmaps[i - 1].data, mipmaps[i - 1].total() * mipmaps[i - 1].elemSize());
             imageTransferBuffer->unmapMem();
 
-            copyBufferToImage(imageTransferBuffer->buffer, image, cpuData->cols, cpuData->rows, i);
+            copyBufferToImage(imageTransferBuffer->buffer, image, width(), height(), i);
 
             transitionImageLayout(image, format, i, { VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL });
         }

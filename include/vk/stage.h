@@ -110,6 +110,8 @@ public:
     void render(uint32_t newAge);
     void show(const char* windowName) const;
 
+    GPUMat* getGPUMat();
+
 private:
     void createShader();
     void createPipelineLayout();
