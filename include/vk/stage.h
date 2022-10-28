@@ -16,6 +16,9 @@ extern GPUBuffer* uniformSrcBuffer;
 
 extern GPUBuffer* meshSrcBuffer;
 
+extern int32_t uiMouseX, uiMouseY;
+extern float uiMouseLBT, uiMouseRBT;
+
 class Stage;
 
 struct StageProperties
@@ -29,8 +32,9 @@ struct StageProperties
 system vec4 x (REFERENCE_COUNT + TEXTURES_COUNT + 1):
 0 to REFERENCE_COUNT - 1: reference[0 to REFERENCE_COUNT] info { width, height, mipmapLevel, 0.0 }    
 REFERENCE_COUNT to REFERENCE_COUNT + TEXTURES_COUNT - 1: textures[0 to TEXTURES_COUNT] info { width, height, mipmapLevel, 0.0 }   
-REFERENCE_COUNT + TEXTURES_COUNT: time { s, 1/2s, ms, 1/2ms }
+REFERENCE_COUNT + TEXTURES_COUNT: time { s, 1/2s, ms, freme count }
 REFERENCE_COUNT + TEXTURES_COUNT + 1: { frame width, frame height, age, 1/2age } 
+REFERENCE_COUNT + TEXTURES_COUNT + 2: { mouseX, mouseY, mouseLBT, mouseRBT }
 */
 
     const std::string shaderPath;
@@ -41,7 +45,7 @@ REFERENCE_COUNT + TEXTURES_COUNT + 1: { frame width, frame height, age, 1/2age }
 struct DefaultUniform
 {
     alignas(16) glm::mat4 matrix[8];
-    alignas(16) glm::vec4 vector[8 + REFERENCE_COUNT + TEXTURES_COUNT + 2];
+    alignas(16) glm::vec4 vector[8 + REFERENCE_COUNT + TEXTURES_COUNT + 3];
 };
 
 struct ScreenMesh
@@ -96,6 +100,8 @@ private:
     uint32_t age = 0;
 
     StageProperties* assets;
+
+    std::string tag;
 
 public:
 

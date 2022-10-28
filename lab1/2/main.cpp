@@ -4,7 +4,7 @@
 #include "opencv2/imgcodecs.hpp"
 #include "lab1.h"
 
-#define INPUT0 "../fg.png"
+#define INPUT0 "../face.png"
 
 int main()
 {

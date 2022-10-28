@@ -48,7 +48,8 @@ def compile(path: str):
 
     if result != 0:
         print('Failed to compile...')
-        exit(-1)
+        print('\n----------ENTER---!!!!!!!!!!!!!---ENTER------------')
+        input()
 
     print('Done\n')
 

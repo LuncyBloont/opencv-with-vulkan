@@ -75,6 +75,13 @@ public:
 extern const _Log_Type_ Log;
 extern const _Log_Type_ LogErr;
 extern const _Log_Type_ LogWarn;
+extern const _Log_Type_ __LogDB;
+
+#ifdef DEBUG 
+#define LogDB(...) __LogDB(__VA_ARGS__)
+#else
+#define LogDB(...)
+#endif
 
 template <typename T>
 std::string _any_to_string(const T& t)

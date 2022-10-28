@@ -19,8 +19,8 @@ struct Data0
 
 int main()
 {
-    cv::Mat image = cv::imread("../08.jpg");
-    cv::Mat background = cv::imread("../08_bg.jpg");
+    cv::Mat image = cv::imread("../e1.png");
+    cv::Mat background = cv::imread("../bg.png");
     
     assert(!image.empty());
     assert(!background.empty());
@@ -34,7 +34,7 @@ int main()
         Data0* data0 = reinterpret_cast<Data0*>(rawData0);
         float bias = val / data0->biasMax;
 
-        process<U8>(*data0->output, [&](vec2 uv) {
+        multiProcess<U8, 32>(*data0->output, [&](vec2 uv) {
             vec3 raw = _rgb(sample<U8>(*data0->image, uv));
             vec3 bg = _rgb(sample<U8>(*data0->background, uv));
             return vec4(

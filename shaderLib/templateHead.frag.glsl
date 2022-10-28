@@ -11,7 +11,7 @@ layout(location = 1) in vec4 uv;
 
 layout (binding = 0) uniform UniObject {
     mat4 mats[8];
-    vec4 vecs[8 + 2 + REF_CNT + TEX_CNT];
+    vec4 vecs[8 + 3 + REF_CNT + TEX_CNT];
 } uni;
 
 layout (binding = 1) uniform sampler2D references[REF_CNT];
@@ -29,6 +29,8 @@ layout(location = 0) out vec4 outColor;
 
 #define time (uni.vecs[REF_CNT + TEX_CNT + 8])
 #define frame (uni.vecs[REF_CNT + TEX_CNT + 1 + 8])
+#define frameInfo (uni.vecs[REF_CNT + TEX_CNT + 1 + 8])
+#define mouse (uni.vecs[REF_CNT + TEX_CNT + 2 + 8])
 
 #define matLib (uni.mats)
 #define vecLib (uni.vecs)

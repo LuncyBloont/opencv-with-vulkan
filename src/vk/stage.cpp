@@ -2,6 +2,7 @@
 #include "glm/fwd.hpp"
 #include "gpuBuf.h"
 #include "gpuMat.h"
+#include "helper.h"
 #include "imageHelper.h"
 #include "opencv2/core/mat.hpp"
 #include "opencv2/highgui.hpp"
@@ -10,12 +11,16 @@
 #include "vkinfo.h"
 #include "vulkan/vulkan_core.h"
 #include <stdint.h>
+#include <string>
 #include <vcruntime.h>
 #include <vcruntime_string.h>
 
 GPUBuffer* uniformSrcBuffer = nullptr;
 
 GPUBuffer* meshSrcBuffer = nullptr;
+
+int32_t uiMouseX = -1, uiMouseY = -1;
+float uiMouseLBT = 0.0f, uiMouseRBT = 0.0f;
 
 void enableUnifromTransfer()
 {
@@ -39,6 +44,11 @@ void disableMeshTransfer()
 
 Stage::Stage(uint32_t width, uint32_t height, StageProperties* assets) : width(width), height(height), assets(assets)
 {
+    static int idForTag;
+
+    tag = std::string("Stage(") + std::to_string(idForTag) + ")";
+    idForTag += 1;
+
     data = cv::Mat(height, width, CV_8UC4);
     frame = new GPUMat(&data, WRITE_MAT, false, USE_RAW);
 
@@ -71,11 +81,6 @@ void Stage::render(uint32_t newAge)
         return;
     }
 
-    transitionImageLayout(frame->image, frame->format, 0, {
-        VK_IMAGE_LAYOUT_UNDEFINED,
-        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
-    });
-
     age = newAge;
     for (size_t i = 0; i < assets->reference.size(); ++i)
     {
@@ -84,6 +89,11 @@ void Stage::render(uint32_t newAge)
             assets->reference[i]->render(newAge);
         }
     }
+    
+    transitionImageLayout(frame->image, frame->format, 0, {
+        VK_IMAGE_LAYOUT_UNDEFINED,
+        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+    });
 
     updateUniform();
 
@@ -122,6 +132,8 @@ void Stage::render(uint32_t newAge)
         VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
         VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
     });
+    
+    LogDB("%s render complete at Age(\t%d\t)\n", tag.c_str(), newAge);
 }
 
 void Stage::createFramebuffer()
@@ -160,7 +172,11 @@ void Stage::createEtc()
 
 void Stage::show(const char* windowName) const
 {
-    frame->apply();
+    if (frame->showAge < age)
+    {
+        frame->apply();
+        frame->showAge = age;
+    }
     cv::imshow(windowName, data);
 }
 
@@ -256,7 +272,7 @@ void Stage::updateUniform()
         time,
         0.5f * time,
         time * 1000.0f,
-        time * 500.0
+        float(age - 1)
     };
 
     uniform.vector[8 + TEXTURES_COUNT + REFERENCE_COUNT + 1] = {
@@ -264,6 +280,13 @@ void Stage::updateUniform()
         height,
         age,
         age * 0.5f
+    };
+
+    uniform.vector[8 + TEXTURES_COUNT + REFERENCE_COUNT + 2] = {
+        uiMouseX,
+        uiMouseY,
+        uiMouseLBT,
+        uiMouseRBT
     };
 
     for (uint32_t i = 0; i < REFERENCE_COUNT; ++i)
@@ -298,6 +321,12 @@ void Stage::updateUniform()
         {
             uniform.vector[8 + i] = { 0.0f, 0.0f, 0.0f, 0.0f };
         }
+    }
+
+    for (uint32_t i = 0; i < 8; ++i)
+    {
+        uniform.vector[i] = assets->uniVec[i];
+        uniform.matrix[i] = assets->uniMat[i];
     }
 
     writeUniform();

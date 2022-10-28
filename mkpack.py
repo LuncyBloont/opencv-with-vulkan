@@ -47,7 +47,6 @@ refDirs = [
     './include/',
     './src/',
     './shaderLib/',
-    './shaders/',
     './defaultVS/'
 ]
 

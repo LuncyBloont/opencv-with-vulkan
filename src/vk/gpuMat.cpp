@@ -139,7 +139,7 @@ GPUMat::GPUMat(cv::Mat* mat, bool readable, bool genMip , bool srgb, bool HDR) :
 
     if (readable == WRITE_MAT)
     {
-        transitionImageLayout(image, format, 0, { VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL });
+        transitionImageLayout(image, format, 0, { VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL });
     }
 }
 
@@ -261,7 +261,7 @@ void GPUMat::apply()
         memcpy(cpuData->data, imageReadFromGPUBuffer->data, cpuData->total() * cpuData->elemSize());
         imageReadFromGPUBuffer->unmapMem();
         
-        transitionImageLayout(image, format, 0, { VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL });
+        transitionImageLayout(image, format, 0, { VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL });
     }
 }
 

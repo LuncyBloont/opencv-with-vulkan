@@ -10,7 +10,7 @@
 
 #define DEFAULT_T_MEM_SIZE (32 * 1024 * 1024 * 4 * 2)
 #define DEFAULT_V_MEM_SIZE (10000 * 4 * 4 * 16 * 8 * 32)
-#define DEFAULT_U_MEM_SIZE (16 * 64)
+#define DEFAULT_U_MEM_SIZE (16 * 128 * 256)
 #define DEFAULT_TRANS_SIZE (8 * 4096 * 4096 * 4)
 #define DEFAULT_I_MEM_SIZE (16 * 8 * 100000)
 

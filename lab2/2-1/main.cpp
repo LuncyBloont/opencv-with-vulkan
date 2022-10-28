@@ -35,8 +35,9 @@ vec<L, float> sigmoid(vec<L, float> x, vec<L, float> f)
 
 int main()
 {
-    cv::Mat image = cv::imread("../07.jpg");
-    cv::Mat background = cv::imread("../07_bg.jpg");
+    cv::Mat image = cv::imread("../e1.png");
+    
+    cv::Mat background = cv::imread("../bg.png");
     
     assert(!image.empty());
     assert(!background.empty());
@@ -101,30 +102,30 @@ int main()
         };
 
         toCopy = data0->image;
-        process<U8>(*data0->tmp0, copy);
+        multiProcess<U8, 32>(*data0->tmp0, copy);
 
         for (int i = 0; i < 4; ++i)
         {
             toBlur = i % 2 == 0 ? data0->tmp0 : data0->tmp1;
-            process<U8>(i % 2 == 1 ? *data0->tmp0 : *data0->tmp1, edgeBlur);
+            multiProcess<U8, 32>(i % 2 == 1 ? *data0->tmp0 : *data0->tmp1, edgeBlur);
         }
 
         toCopy = data0->background;
-        process<U8>(*data0->tmp2, copy);
+        multiProcess<U8, 32>(*data0->tmp2, copy);
 
         for (int i = 0; i < 4; ++i)
         {
             toBlur = i % 2 == 0 ? data0->tmp2 : data0->tmp3;
-            process<U8>(i % 2 == 1 ? *data0->tmp2 : *data0->tmp3, edgeBlur);
+            multiProcess<U8, 32>(i % 2 == 1 ? *data0->tmp2 : *data0->tmp3, edgeBlur);
         }
 
         bgImg = data0->tmp3;
         fgImg = data0->tmp1;
-        process<U8>(*data0->output, mask);
+        multiProcess<U8, 32>(*data0->output, mask);
 
         bgImg = data0->background;
         fgImg = data0->image;
-        process<U8>(*data0->tmp0, mask);
+        multiProcess<U8, 32>(*data0->tmp0, mask);
 
         cv::imshow("OutputF", *data0->tmp1);
         cv::imshow("OutputB", *data0->tmp3);

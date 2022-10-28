@@ -49,6 +49,7 @@ struct GPUMat
     GSampler* sampler = defaultLinearSampler;
     uint32_t levels;
     bool HDR;
+    uint32_t showAge = 0;
 
     VkFormat format;
     

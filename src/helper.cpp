@@ -122,4 +122,9 @@ void Log::unsetColor() const
 const _Log_Type_ Log(_Log_Type_::LogType::Info, stdout);
 const _Log_Type_ LogErr(_Log_Type_::LogType::Error, stdout);
 const _Log_Type_ LogWarn(_Log_Type_::LogType::Waring, stdout);
-
+const _Log_Type_ __LogDB(_Log_Type_::Profile{ 
+    "debug",
+    "\033[44;1m", 
+    "\033[34m",
+    "\033[30m"
+}, stdout);
