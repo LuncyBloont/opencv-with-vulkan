@@ -4,7 +4,7 @@
 
 #include "../shaderLib/templateHead.frag.glsl"
 
-void frag(in vec4 fragCoord, out vec4 fragColor)
+void _frag(in vec4 fragCoord, out vec4 fragColor)
 {
     float size = 15.0;
     vec4 col = vec4(0.0);
@@ -15,9 +15,9 @@ void frag(in vec4 fragCoord, out vec4 fragColor)
         for (float j = -size; j <= size; j += 1.0)
         {
             vec2 uv = fragCoord.zw + vec2(i, j);
-            uv /= frame.xy;
+            uv /= _frame.xy;
             float p = cos(clamp(length(vec2(i, j)) / size, 0.0, 1.0) * 3.14159) * 0.5 + 0.5;
-            col += texture(tex0, uv) * p;
+            col += texture(_tex0, uv) * p;
             base += p;
         }
     }

@@ -7,8 +7,8 @@
 
 void main()
 {
-    vec4 coord = vec4(uv.xy, uv.xy * frame.xy);
-    frag(coord, outColor);
+    vec4 coord = vec4(_uv.xy, _uv.xy * _frame.xy);
+    _frag(coord, _outColor);
 }
 
 #endif

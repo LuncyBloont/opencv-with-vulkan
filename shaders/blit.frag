@@ -4,9 +4,9 @@
 
 #include "../shaderLib/templateHead.frag.glsl"
 
-void frag(in vec4 fragCoord, out vec4 fragColor)
+void _frag(in vec4 fragCoord, out vec4 fragColor)
 {
-    fragColor = texelFetch(ref0, ivec2(fragCoord.zw), 0);
+    fragColor = texelFetch(_ref0, ivec2(fragCoord.zw), 0);
 }
 
 #include "../shaderLib/templateEnd.frag.glsl"

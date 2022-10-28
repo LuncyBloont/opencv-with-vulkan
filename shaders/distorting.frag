@@ -8,7 +8,7 @@ precision highp float;
 
 #define SIZE 8
 
-void frag(in vec4 fragCoord, out vec4 fragColor)
+void _frag(in vec4 fragCoord, out vec4 fragColor)
 {
     vec4 sum = vec4(0.0);
     float base = 0.0;
@@ -17,11 +17,11 @@ void frag(in vec4 fragCoord, out vec4 fragColor)
         for (int j = -SIZE; j < SIZE; ++j)
         {
             ivec2 pos = ivec2(fragCoord.zw) + ivec2(i, j);
-            if (pos.x < 0 || pos.y < 0 || pos.x >= tex0Info.x || pos.y >= tex0Info.y)
+            if (pos.x < 0 || pos.y < 0 || pos.x >= _tex0Info.x || pos.y >= _tex0Info.y)
             {
                 continue;
             }
-            sum += texelFetch(tex0, pos, 0);
+            sum += texelFetch(_tex0, pos, 0);
             base += 1.0;
         }
     }

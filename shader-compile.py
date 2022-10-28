@@ -1,4 +1,5 @@
 
+from genericpath import isdir
 import os
 import re
 import time
@@ -29,8 +30,15 @@ if not os.path.exists(tmp_file[:tmp_file.rfind('/')]):
 def compile(path: str):
     global compile_path
     global flags
-    if re.match('.*\.spv$', path) or re.match('.*\.glsl$', path):
-        print('Skip include file or binary file: {}\n'.format(path))
+    if re.match('.*\.spv$', path):
+        print('Skip binary file: {}\n'.format(path))
+        return
+
+    global lastCompile
+
+    if re.match('.*\.glsl$', path):
+        print('Skip but mark include file: {}',format(path))
+        lastCompile[path] = os.path.getmtime(path)
         return
 
     output = path[:path.rfind('.')]
@@ -41,7 +49,6 @@ def compile(path: str):
 
     print('run: ' + command)
 
-    global lastCompile
     lastCompile[path] = os.path.getmtime(path)
 
     result = os.system(command)
@@ -56,7 +63,11 @@ def compile(path: str):
 def compile_folder(dirname):
     shaderSources = os.listdir(dirname)
     for source in shaderSources:
-        compile(os.path.join(dirname, source))
+        path = os.path.join(dirname, source)
+        if os.path.isdir(path):
+            compile_folder(path)
+            continue
+        compile(path)
 
 for dir in folders:
     compile_folder(dir)
