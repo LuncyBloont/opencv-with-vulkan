@@ -2,8 +2,11 @@
 #include "glm/common.hpp"
 #include "glm/fwd.hpp"
 #include "glm/geometric.hpp"
+#include "opencv2/core/mat.hpp"
+#include "opencv2/imgcodecs.hpp"
 #include <cstdio>
 #include <ctime>
+#include <opencv2/imgproc.hpp>
 
 std::clock_t markedTime = 0;
 
@@ -128,3 +131,27 @@ const _Log_Type_ __LogDB(_Log_Type_::Profile{
     "\033[34m",
     "\033[30m"
 }, stdout);
+
+cv::Mat imreadRGB(const char* path, int flags)
+{
+    cv::Mat buf = cv::imread(path, flags);
+    cv::Mat res;
+    res.create(buf.size(), buf.type());
+    cv::ColorConversionCodes code = cv::COLOR_BGR2RGB;
+    switch (res.channels()) {
+        case 1:
+            return buf;
+        case 2:
+            return buf;
+        case 3:
+            code = cv::COLOR_BGR2RGB;
+            break;
+        case 4:
+            code = cv::COLOR_BGRA2RGBA;
+            break;
+        default:
+            code = cv::COLOR_BGR2RGB;
+    }
+    cv::cvtColor(buf, res, code);
+    return res;
+}

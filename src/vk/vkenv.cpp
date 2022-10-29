@@ -34,13 +34,12 @@ VkPhysicalDeviceProperties gVkPhysicalDeviceProperties;
 
 VkDebugUtilsMessengerEXT gVkDebuger;
 
-GPUMem* gImgMemory = nullptr;
-GPUMem* gVertexMemory = nullptr;
-GPUMem* gIndexMemory = nullptr;
-GPUMem* gUniformMemory = nullptr;
-GPUMem* gFrameBufferMemory = nullptr;
-GPUMem* gTransMemory = nullptr;
-GPUMem* gReadMemory = nullptr;
+GPUMemsArray<3> gImgMemory("Image Memory");
+GPUMemsArray<2> gVertexMemory("Vertex Memory");
+GPUMemsArray<2> gIndexMemory("Index Memory");
+GPUMemsArray<2> gUniformMemory("Uniform Memory");
+GPUMemsArray<2> gTransMemory("Trans Memory");
+GPUMemsArray<2> gReadMemory("Read Memory");
 
 VkCommandPool gVkCommandPool = nullptr;
 
@@ -320,13 +319,12 @@ void cleanupVulkan()
     disableUnifromTransfer();
     disableImageTransferBuffer();
 
-    memoryDisable(gImgMemory);
-    memoryDisable(gVertexMemory);
-    memoryDisable(gIndexMemory);
-    memoryDisable(gUniformMemory);
-    memoryDisable(gFrameBufferMemory);
-    memoryDisable(gTransMemory);
-    memoryDisable(gReadMemory);
+    gImgMemory.memoryDisable();
+    gVertexMemory.memoryDisable();
+    gIndexMemory.memoryDisable();
+    gUniformMemory.memoryDisable();
+    gTransMemory.memoryDisable();
+    gReadMemory.memoryDisable();
 
     destoryCommandPool();
     cleaupDevice();

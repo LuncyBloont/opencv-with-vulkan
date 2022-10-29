@@ -2,6 +2,8 @@
 #define CVVK_HELPER_H
 
 #include "glm/glm.hpp"
+#include "opencv2/core/mat.hpp"
+#include "opencv2/imgcodecs.hpp"
 #include <cstdio>
 #include <sstream>
 #include <string>
@@ -93,5 +95,7 @@ std::string _any_to_string(const T& t)
 
 #define CSTR(s) _any_to_string(s).c_str()
 #define STR(s) _any_to_string(s)
+
+cv::Mat imreadRGB(const char* path, int flags = cv::IMREAD_COLOR);
 
 #endif

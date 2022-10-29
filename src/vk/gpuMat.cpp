@@ -122,11 +122,10 @@ GPUMat::GPUMat(cv::Mat* mat, bool readable, bool genMip , bool srgb, bool HDR) :
 
     vkGetImageMemoryRequirements(gVkDevice, image, &memoryRequirements);
 
-    memoryEnable(gImgMemory, memoryRequirements, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, DEFAULT_T_MEM_SIZE);
+    memory = gImgMemory.memoryAllocate(memoryRequirements, memoryRequirements.size, DEFAULT_T_MEM_SIZE, 
+        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-    memory = gImgMemory->alloc(memoryRequirements.size, memoryRequirements.alignment);
-
-    vkBindImageMemory(gVkDevice, image, gImgMemory->vulkanMemory(), memory);
+    vkBindImageMemory(gVkDevice, image, memory.area->vulkanMemory(), memory.ptr);
 
     // image view 
 

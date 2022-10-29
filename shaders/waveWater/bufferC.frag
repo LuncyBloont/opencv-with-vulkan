@@ -4,6 +4,9 @@
 
 #include "./common.frag.glsl"
 
+#define iChannel0 _ref0
+#define iChannel1 _tex0
+
 /*
  * Copyright (c) 2022 LuncyTB. All rights reserved.
  */
@@ -11,8 +14,6 @@
 void mainImage( out vec4 fragColor, in vec2 fragCoord )
 {
     vec2 uv = fragCoord / iResolution.xy;
-
-    
 
     fragColor = texture(iChannel0, uv);
     

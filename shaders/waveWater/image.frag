@@ -4,6 +4,10 @@
 
 #include "./common.frag.glsl"
 
+#define iChannel0 _ref0
+#define iChannel1 _tex0
+#define iChannel2 _tex1
+
 /*
  * Copyright (c) 2022 LuncyTB. All rights reserved.
  */
@@ -25,23 +29,23 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     nor *= vec3(1.0, 1.0, 0.09);
     nor = -normalize(nor);
     
-    vec4 sky = vec4(0.77, 0.88, 0.99, 1.0);
+    vec4 sky = cvec4(vec4(0.77, 0.88, 0.99, 1.0));
 
     // Output to screen
     fragColor = texture(iChannel1, (fragCoord * 1.0 + nor.xy * 1200.0) / iResolution.xy) * 
-        vec4(0.5, 0.7, 1.0, 1.0) * 1.5;
-    fragColor = mix(fragColor, vec4(0.9, 0.91, 0.99, 1.0) * sky, 
+        cvec4(vec4(0.5, 0.7, 1.0, 1.0)) * 1.5;
+    fragColor = mix(fragColor, cvec4(vec4(0.9, 0.91, 0.99, 1.0)) * sky, 
         pow(pzz.r * texture(iChannel2, uv * 12.0).r * 1.2, 0.5));
     
     vec2 mpos = boat(iTime, iResolution.xy);
     if (distance(mpos, fragCoord) < 5.0)
     {
-        fragColor = vec4(0.3, 0.4, 0.31, 1.0) * 1.1 * sky;
+        fragColor = cvec4(vec4(0.3, 0.4, 0.31, 1.0)) * 1.1 * sky;
     }
     else if (distance(mpos, fragCoord) < 7.0)
     {
         vec2 offset = normalize(fragCoord - mpos);
-        fragColor = vec4(0.3, 0.4, 0.31, 1.0) * 
+        fragColor = cvec4(vec4(0.3, 0.4, 0.31, 1.0)) * 
             (0.8 + 0.45 * max(0.0, dot(offset, normalize(vec2(1.0, 0.4))))) *
             sky;
     }

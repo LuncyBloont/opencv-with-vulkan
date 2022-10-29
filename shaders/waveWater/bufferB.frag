@@ -4,6 +4,8 @@
 
 #include "./common.frag.glsl"
 
+#define iChannel0 _ref0
+
 /*
  * Copyright (c) 2022 LuncyTB. All rights reserved.
  */

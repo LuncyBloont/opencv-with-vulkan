@@ -45,4 +45,7 @@ layout(location = 0) out vec4 _outColor;
 
 void _frag(in vec4 fragCoord, out vec4 fragColor);
 
+#define cvec3(k) ((k).bgr)
+#define cvec4(k) ((k).bgra)
+
 #endif

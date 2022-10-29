@@ -105,7 +105,7 @@ private:
 
 public:
 
-    explicit Stage(uint32_t width, uint32_t height, StageProperties* assets);
+    explicit Stage(uint32_t width, uint32_t height, StageProperties* assets, bool HDR = false);
     virtual ~Stage();
 
     Stage(const Stage& o) = delete;

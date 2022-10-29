@@ -1,14 +1,16 @@
 #ifndef CVVK_VK_GPU_MEME_H
 #define CVVK_VK_GPU_MEME_H
 
+#include "helper.h"
 #include "vulkan/vulkan_core.h"
 #include <cstdint>
 #include <set>
+#include <stdexcept>
 #include <stdint.h>
 #include <vulkan/vulkan.h>
 #include "vkHelper.h"
 
-#define DEFAULT_T_MEM_SIZE (32 * 1024 * 1024 * 4 * 2)
+#define DEFAULT_T_MEM_SIZE (32 * 1024 * 1024 * 8 * 2)
 #define DEFAULT_V_MEM_SIZE (10000 * 4 * 4 * 16 * 8 * 32)
 #define DEFAULT_U_MEM_SIZE (16 * 128 * 256)
 #define DEFAULT_TRANS_SIZE (8 * 4096 * 4096 * 4)
@@ -51,24 +53,53 @@ public:
     
 };
 
-inline void memoryEnable(GPUMem*& mem, const VkMemoryRequirements& requirements, VkMemoryPropertyFlags properties, VkDeviceSize size)
+struct GPUPtr
 {
-    if (mem == nullptr)
-    {
-        mem = new GPUMem(size, requirements, properties);
-    }
-    
-    trydo(true) = mem->isCompatible(requirements, properties);
-}
+    GPUMem* area;
+    VkDeviceSize ptr;
+};
 
-inline void memoryDisable(GPUMem*& mem)
+template <uint32_t Count>
+struct GPUMemsArray
 {
-    if (mem != nullptr)
+    GPUMem* arr[Count] = { nullptr };
+    const uint32_t count = Count;
+
+    const char* name;
+
+    explicit GPUMemsArray(const char* name) : name(name)
+    {}
+
+    GPUPtr memoryAllocate(const VkMemoryRequirements& requirements, VkDeviceSize size, VkDeviceSize iniSize, VkMemoryPropertyFlags properties)
     {
-        delete mem;
-        mem = nullptr;
+        for (uint32_t i = 0; i < count; ++i) {
+            if (arr[i] == nullptr)
+            {
+                LogDB("%s GPUMemArray create area %d\n", name, i);
+                arr[i] = new GPUMem(iniSize, requirements, properties);
+            }
+            if (arr[i]->isCompatible(requirements, properties))
+            {
+                GPUPtr ptr { arr[i], arr[i]->alloc(size, requirements.alignment) };
+                return ptr;
+            }
+        }
+
+        LogErr("CPU Memory Array allocate error: no available GPUMem.\n");
+        throw std::runtime_error("GPUMemArray alloc");
     }
-}
+
+    void memoryDisable()
+    {
+        for (uint32_t i = 0; i < count; ++i) {
+            if (arr[i] != nullptr)
+            {
+                delete arr[i];
+                arr[i] = nullptr;
+            }
+        }
+    }
+};
 
 uint32_t findMemoryIndex(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 

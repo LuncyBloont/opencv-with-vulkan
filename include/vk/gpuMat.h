@@ -1,6 +1,7 @@
 #ifndef CVVK_VK_GPUMAT_H
 #define CVVK_VK_GPUMAT_H
 
+#include "gpuMem.h"
 #include "helper.h"
 #include "opencv2/core/hal/interface.h"
 #include "opencv2/core/mat.hpp"
@@ -41,7 +42,7 @@ struct GPUMat
     VkImage image;
     VkImageView view;
     VkMemoryRequirements memoryRequirements;
-    VkDeviceSize memory;
+    GPUPtr memory;
     cv::Mat* cpuData;
     std::vector<cv::Mat> mipmaps;
     bool readable;

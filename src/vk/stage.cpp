@@ -4,6 +4,7 @@
 #include "gpuMat.h"
 #include "helper.h"
 #include "imageHelper.h"
+#include "opencv2/core/hal/interface.h"
 #include "opencv2/core/mat.hpp"
 #include "opencv2/highgui.hpp"
 #include "vkHelper.h"
@@ -19,7 +20,7 @@ GPUBuffer* uniformSrcBuffer = nullptr;
 
 GPUBuffer* meshSrcBuffer = nullptr;
 
-int32_t uiMouseX = -1, uiMouseY = -1;
+int32_t uiMouseX = -100, uiMouseY = -100;
 float uiMouseLBT = 0.0f, uiMouseRBT = 0.0f;
 
 void enableUnifromTransfer()
@@ -42,15 +43,15 @@ void disableMeshTransfer()
     delete meshSrcBuffer;
 }
 
-Stage::Stage(uint32_t width, uint32_t height, StageProperties* assets) : width(width), height(height), assets(assets)
+Stage::Stage(uint32_t width, uint32_t height, StageProperties* assets, bool HDR) : width(width), height(height), assets(assets)
 {
     static int idForTag;
 
     tag = std::string("Stage(") + std::to_string(idForTag) + ")";
     idForTag += 1;
 
-    data = cv::Mat(height, width, CV_8UC4);
-    frame = new GPUMat(&data, WRITE_MAT, false, USE_RAW);
+    data = cv::Mat(height, width, HDR ? CV_32SC4 : CV_8UC4);
+    frame = new GPUMat(&data, WRITE_MAT, false, USE_RAW, HDR);
 
     createShader();
 

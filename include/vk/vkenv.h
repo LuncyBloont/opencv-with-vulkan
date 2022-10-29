@@ -27,13 +27,12 @@ extern VkDebugUtilsMessengerEXT gVkDebuger;
 class GPUMem;
 struct GPUMat;
 
-extern GPUMem* gImgMemory;
-extern GPUMem* gVertexMemory;
-extern GPUMem* gIndexMemory;
-extern GPUMem* gUniformMemory;
-extern GPUMem* gFrameBufferMemory;
-extern GPUMem* gTransMemory;
-extern GPUMem* gReadMemory;
+extern GPUMemsArray<3> gImgMemory;
+extern GPUMemsArray<2> gVertexMemory;
+extern GPUMemsArray<2> gIndexMemory;
+extern GPUMemsArray<2> gUniformMemory;
+extern GPUMemsArray<2> gTransMemory;
+extern GPUMemsArray<2> gReadMemory;
 
 extern VkCommandPool gVkCommandPool;
 

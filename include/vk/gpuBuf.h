@@ -1,13 +1,14 @@
 #ifndef CVVK_VK_GPUBUF_H
 #define CVVK_VK_GPUBUF_H
 
+#include "gpuMem.h"
 #include "vulkan/vulkan_core.h"
 
 struct GPUBuffer
 {
     VkBuffer buffer;
     VkMemoryRequirements memoryRequirements;
-    VkDeviceSize memory;
+    GPUPtr memory;
     VkBufferUsageFlags usage;
 
     void* data;

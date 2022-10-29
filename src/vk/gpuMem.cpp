@@ -131,5 +131,3 @@ const VkDeviceMemory& GPUMem::vulkanMemory() const
 {
     return memory;
 }
-
-
