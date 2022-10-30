@@ -4,9 +4,11 @@
 #include "gpuMat.h"
 #include "helper.h"
 #include "imageHelper.h"
+#include "opencv2/core.hpp"
 #include "opencv2/core/hal/interface.h"
 #include "opencv2/core/mat.hpp"
 #include "opencv2/highgui.hpp"
+#include "opencv2/imgproc.hpp"
 #include "vkHelper.h"
 #include "vkenv.h"
 #include "vkinfo.h"
@@ -51,6 +53,7 @@ Stage::Stage(uint32_t width, uint32_t height, StageProperties* assets, bool HDR)
     idForTag += 1;
 
     data = cv::Mat(height, width, HDR ? CV_32SC4 : CV_8UC4);
+    
     frame = new GPUMat(&data, WRITE_MAT, false, USE_RAW, HDR);
 
     createShader();

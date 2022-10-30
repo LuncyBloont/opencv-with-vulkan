@@ -18,7 +18,7 @@
 }
 
 void markTime();
-void endMark(const char* msg);
+float endMark(const char* msg);
 
 float areaOfTriangle(glm::vec2 A, glm::vec2 B, glm::vec2 C);
 float disToLine(glm::vec2 p, glm::vec2 A, glm::vec2 B);

@@ -18,13 +18,13 @@ int main()
         const uint32_t width = 800;
         const uint32_t height = 600;
 
-        cv::Mat waveBump = cv::imread("../Noise1.png");
+        cv::Mat waveBump = imreadRGB("../Noise1.png");
         GPUMat waveBumpTex(&waveBump);
         waveBumpTex.apply();
-        cv::Mat bubble = cv::imread("../Noise2.png");
+        cv::Mat bubble = imreadRGB("../Noise2.png");
         GPUMat bubbleTex(&bubble);
         bubbleTex.apply();
-        cv::Mat bricks = cv::imread("../Bricks.png");
+        cv::Mat bricks = imreadRGB("../bb.png");
         GPUMat bricksTex(&bricks);
         bricksTex.apply();
 

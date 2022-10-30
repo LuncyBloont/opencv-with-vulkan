@@ -19,7 +19,7 @@ int main(int argc, char** argv)
     initializeVulkan();
     
     {
-        cv::Mat input = cv::imread(argv[1]);
+        cv::Mat input = imreadRGB(argv[1]);
 
         GPUMat tex0(&input);
         tex0.apply();

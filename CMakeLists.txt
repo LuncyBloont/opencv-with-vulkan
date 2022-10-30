@@ -3,12 +3,12 @@ project(ImageProcessing VERSION 0.1.0)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-set(LAB_PATH "./lab6/3/main.cpp") # 选择实验代码目录
+set(LAB_PATH "./lab6/1/main.cpp") # 选择实验代码目录
 
 include(CTest)
 enable_testing()
-# set(CMAKE_BUILD_TYPE "Release") # 加速编译
-add_definitions(-DDEBUG)
+set(CMAKE_BUILD_TYPE "Release") # 加速编译
+# add_definitions(-DDEBUG)
 
 aux_source_directory("./src/" SRC)
 aux_source_directory("./src/vk" VK_HELP_SRC)

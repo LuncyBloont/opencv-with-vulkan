@@ -4,6 +4,8 @@
 
 #include "../shaderLib/templateHead.frag.glsl"
 
+#define SHOW_FOR_OPENCV
+
 ivec2 uvFilter(vec2 raw)
 {
     return ivec2(clamp(raw, vec2(0.0), _frameInfo.xy - 1.0));
@@ -11,11 +13,21 @@ ivec2 uvFilter(vec2 raw)
 
 void _frag(in vec4 fragCoord, out vec4 fragColor)
 {
-    if (_mouse.z > 0.5 || _time.w < 1.0 || _mouse.y > _frame.y * 0.9)
-    {
-        float size = max(1.0, _mouse.x * 64.0 / _frameInfo.x) * mix(1.0, (1.0 + cos(_time.x)) * 0.5, _mouse.y > _frame.y * 0.9);
+    float paddingX = 6.0;
+    float posY = 24.0;
+    float sizeH = 16.0;
+    float inPaddingX = 10.0;
+    float inSizeH = 4.0;
+
+    /*if ((_mouse.z >= 0.0 && 
+            abs(_mouse.w - (_frame.y - posY)) < inSizeH && abs(_mouse.z / _frame.x - 0.5) < 0.5 - inPaddingX / _frame.x
+        ) || _time.w < 1.0)
+    {*/
+        float size = _vecLib[0].w;//max(1.0, 64.0 * (_mouse.x - inPaddingX) / (_frameInfo.x - inPaddingX * 2.0));
+        
         float sigmaSpace = _vecLib[0].x;
         float sigmaColor = _vecLib[0].y;
+        
         vec3 col = texelFetch(_tex0, uvFilter(fragCoord.zw), 0).rgb;
         vec3 sumCol = vec3(0.0);
         float sumFac = 0.0;
@@ -25,18 +37,38 @@ void _frag(in vec4 fragCoord, out vec4 fragColor)
             {
                 vec2 spUVOff = vec2(i, j);
                 vec3 spCol = texelFetch(_tex0, uvFilter(fragCoord.zw + spUVOff), 0).rgb;
-                float p = exp(-dot(spUVOff, spUVOff) / 2.0 / pow(sigmaSpace, 2.0)) * 
-                    exp(-dot(spCol - col, spCol - col) / 2.0 / pow(sigmaColor, 2.0));
+                
+                float p = exp(-dot(spUVOff, spUVOff) / 2.0 / pow(sigmaSpace, 2.0));
+                
+                if (_vecLib[0].z > 0.5)
+                {
+                    p *= exp(-pow(dot((spCol - col) * 256.0, vec3(1.0)), 2.0) / 2.0 / pow(sigmaColor, 2.0));
+                
+                }
                 sumCol += spCol * p;
                 sumFac += p;
             }
         }
         fragColor = vec4(sumCol / sumFac, 1.0);
-    }
+
+        /* --------- UI Widget ------ */
+
+        if (abs(fragCoord.w - (_frame.y - posY)) < inSizeH && abs(fragCoord.x - 0.5) < 0.5 - inPaddingX / _frame.x)
+        {
+            if (fragCoord.z < _mouse.x)
+            {
+                fragColor = mix(fragColor, vec4(0.6, 0.7, 0.2, 1.0), 0.6);
+            }
+        }
+        else if (abs(fragCoord.w - (_frame.y - posY)) < sizeH && abs(fragCoord.x - 0.5) < 0.5 - paddingX / _frame.x)
+        {
+            fragColor = mix(fragColor, vec4(0.1, 0.1, 0.1, 1.0), 0.6);
+        }
+    /*}
     else
     {
         fragColor = texelFetch(_ref0, ivec2(fragCoord.zw), 0);
-    }
+    }*/
 }
 
 #include "../shaderLib/templateEnd.frag.glsl"

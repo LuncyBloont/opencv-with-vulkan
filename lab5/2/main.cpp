@@ -11,7 +11,7 @@ int main()
     initializeVulkan();
 
     {
-        cv::Mat input = cv::imread("../abbbg.jpg");
+        cv::Mat input = imreadRGB("../abbbg.jpg");
         cv::imshow("Input", input);
 
         GPUMat tex0(&input);

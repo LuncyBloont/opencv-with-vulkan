@@ -2,6 +2,7 @@
 #include "glm/common.hpp"
 #include "glm/fwd.hpp"
 #include "glm/geometric.hpp"
+#include "opencv2/core.hpp"
 #include "opencv2/core/mat.hpp"
 #include "opencv2/imgcodecs.hpp"
 #include <cstdio>
@@ -15,10 +16,18 @@ void markTime()
     markedTime = clock();
 }
 
-void endMark(const char* msg)
+float endMark(const char* msg)
 {
-    Log(msg, (clock() - markedTime) * 1.0f / CLOCKS_PER_SEC);
+    clock_t t = clock();
+    float dur = (t - markedTime) * 1.0f / CLOCKS_PER_SEC;
+    
+    if (msg[0] != 0)
+    {
+        Log(msg, dur);
+    
+    }
     markedTime = clock();
+    return dur;
 }
 
 float areaOfTriangle(glm::vec2 A, glm::vec2 B, glm::vec2 C)
@@ -153,5 +162,6 @@ cv::Mat imreadRGB(const char* path, int flags)
             code = cv::COLOR_BGR2RGB;
     }
     cv::cvtColor(buf, res, code);
-    return res;
+    cv::flip(res, buf, 0);
+    return buf;
 }
