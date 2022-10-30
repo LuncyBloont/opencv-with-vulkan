@@ -35,10 +35,9 @@ int main()
 
         cv::Mat output1;
         output1.create(input1.size(), input1.type());
-        markTime();
+
         cv::Mat spaceWeight;
         spaceWeight.create(size + 1, size + 1, CV_32SC1);
-
         for (int i = 0; i <= size; ++i)
         {
             for (int j = 0; j <= size; ++j)
@@ -54,7 +53,8 @@ int main()
             colorWeight[i] = float(exp(-pow(i, 2.0f) / 2.0f / pow(sigmaColor, 2.0f)));
         }
 
-        process<U8>(output1, [&](glm::vec2 uv)
+        markTime();
+        multiProcess<U8, 32>(output1, [&](glm::vec2 uv)
         {
             vec3 col = _rgb(texelFetch<U8>(input1, uv));
             vec3 sumCol = vec3(0.0f);
@@ -130,7 +130,7 @@ int main()
 
             age += 1;
             
-            if (cv::waitKey(1) == 'q')
+            if (cv::pollKey() == 'q')
             {
                 break;
             }

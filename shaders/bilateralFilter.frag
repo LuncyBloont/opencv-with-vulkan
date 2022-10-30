@@ -45,7 +45,7 @@ void _frag(in vec4 fragCoord, out vec4 fragColor)
                 
                 if (_vecLib[0].z > 0.5)
                 {
-                    p *= exp(-dot((spCol - col) * 256.0, (spCol - col) * 256.0) * 3.0 / 2.0 / pow(sigmaColor, 2.0));
+                    p *= exp(-pow(dot(abs(spCol - col) * 255.0, vec3(1.0)), 2.0) / 2.0 / pow(sigmaColor, 2.0));
                 
                 }
                 sumCol += spCol * p;

@@ -55,7 +55,7 @@ int main()
             frame.render(age);
             frame.show("Output");
 
-            if (cv::waitKey(1) == 'q')
+            if (cv::pollKey() == 'q')
             {
                 break;
             }

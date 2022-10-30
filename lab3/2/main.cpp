@@ -45,7 +45,7 @@ int main()
 
             goutput.show("Output");
 
-            int key = cv::waitKey(5);
+            int key = cv::pollKey();
 
             if (key == 'q') break;
 
