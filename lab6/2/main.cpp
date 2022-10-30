@@ -1,3 +1,4 @@
+#include "glm/common.hpp"
 #include "gpuMat.h"
 #include "helper.h"
 #include "opencv2/core/mat.hpp"
@@ -65,7 +66,7 @@ int main()
             if (event == cv::EVENT_LBUTTONDOWN)
             {
                 uiMouseX = x;
-                uiMouseY = y;
+                uiMouseY = reinterpret_cast<GPUMat*>(data)->height() - y;
                 uiMouseLBT = 1.0f;
             }
             else
@@ -74,9 +75,11 @@ int main()
                 uiMouseY = -100;
                 uiMouseLBT = 0.0f;
             }
-        });
+        }, mainImage.getGPUMat());
         
+        float avgFPS = 0.0f;
         while (true) {
+            markTime();
             mainImage.render(age);
             mainImage.show("Output");
             if (cv::waitKey(1) == 'q')
@@ -84,8 +87,9 @@ int main()
                 break;
             }
             age += 1;
+            avgFPS = glm::mix(avgFPS, 1.0f / endMark(""), 0.3f);
         }
-
+        Log("FPS: %f\n", avgFPS);
     }
     cleanupVulkan();
     return 0;

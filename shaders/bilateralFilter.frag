@@ -5,6 +5,7 @@
 #include "../shaderLib/templateHead.frag.glsl"
 
 #define SHOW_FOR_OPENCV
+// #define LAZY_UPDATE
 
 ivec2 uvFilter(vec2 raw)
 {
@@ -19,11 +20,13 @@ void _frag(in vec4 fragCoord, out vec4 fragColor)
     float inPaddingX = 10.0;
     float inSizeH = 4.0;
 
-    /*if ((_mouse.z >= 0.0 && 
-            abs(_mouse.w - (_frame.y - posY)) < inSizeH && abs(_mouse.z / _frame.x - 0.5) < 0.5 - inPaddingX / _frame.x
+#ifdef LAZY_UPDATE
+    if ((_mouse.z > 0.5 && 
+            abs(_mouse.y - (_frame.y - posY)) < inSizeH && abs(_mouse.x / _frame.x - 0.5) < 0.5 - inPaddingX / _frame.x
         ) || _time.w < 1.0)
-    {*/
-        float size = _vecLib[0].w;//max(1.0, 64.0 * (_mouse.x - inPaddingX) / (_frameInfo.x - inPaddingX * 2.0));
+    {
+#endif
+        float size = max(1.0, _vecLib[0].w * (_mouse.x - inPaddingX) / (_frameInfo.x - inPaddingX * 2.0));
         
         float sigmaSpace = _vecLib[0].x;
         float sigmaColor = _vecLib[0].y;
@@ -42,7 +45,7 @@ void _frag(in vec4 fragCoord, out vec4 fragColor)
                 
                 if (_vecLib[0].z > 0.5)
                 {
-                    p *= exp(-pow(dot((spCol - col) * 256.0, vec3(1.0)), 2.0) / 2.0 / pow(sigmaColor, 2.0));
+                    p *= exp(-dot((spCol - col) * 256.0, (spCol - col) * 256.0) * 3.0 / 2.0 / pow(sigmaColor, 2.0));
                 
                 }
                 sumCol += spCol * p;
@@ -64,11 +67,14 @@ void _frag(in vec4 fragCoord, out vec4 fragColor)
         {
             fragColor = mix(fragColor, vec4(0.1, 0.1, 0.1, 1.0), 0.6);
         }
-    /*}
+
+#ifdef LAZY_UPDATE
+    }
     else
     {
         fragColor = texelFetch(_ref0, ivec2(fragCoord.zw), 0);
-    }*/
+    }
+#endif
 }
 
 #include "../shaderLib/templateEnd.frag.glsl"

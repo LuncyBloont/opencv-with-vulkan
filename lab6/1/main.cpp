@@ -5,11 +5,13 @@
 #include "opencv2/highgui.hpp"
 #include "opencv2/imgcodecs.hpp"
 #include "opencv2/imgproc.hpp"
+#include "shader.h"
 #include "stage.h"
 #include "vkenv.h"
 #include <tuple>
 
-#define PATH "../face.png"
+#define PATH "../p0.jpg"
+using namespace glm;
 
 int main()
 {
@@ -22,14 +24,45 @@ int main()
         cv::Mat input1 = cv::imread(PATH);
         cv::Mat bFilterCV;
         bFilterCV.create(input1.size(), input1.type());
-        cv::bilateralFilter(input1, bFilterCV, 32, 65.0f, 50.0f);
+        cv::bilateralFilter(input1, bFilterCV, 32, 65.0f, 6.0f);
         cv::imshow("Output1", bFilterCV);
-        endMark("cv::bilateralFilter speed: %fs\n");
+        endMark("cv::bilateralFilter spend: %fs\n");
+
+        cv::Mat output1;
+        output1.create(input1.size(), input1.type());
+        markTime();
+        process<U8>(output1, [&](glm::vec2 uv)
+        {
+            vec3 col = _rgb(texelFetch<U8>(input1, uv));
+            vec3 sumCol = vec3(0.0f);
+            float sumFac = 0.0f;
+            float size = 32.0f;
+            float sigmaSpace = 6.0f;
+            float sigmaColor = 65.0f;
+            for (float i = -size; i <= size; i += 1.0f)
+            {
+                for (float j = -size; j <= size; j += 1.0f)
+                {
+                    vec2 spUVOff = vec2(i, j);
+                    vec3 spCol = _rgb(texelFetch<U8>(input1, uv + spUVOff / vec2(input1.cols, input1.rows)));
+                    
+                    float p = exp(-dot(spUVOff, spUVOff) / 2.0f / pow(sigmaSpace, 2.0f));
+                    
+                    p *= exp(-dot((spCol - col) * 256.0f, (spCol - col) * 256.0f) * 3.0f / 2.0f / pow(sigmaColor, 2.0f));
+                    sumCol += spCol * p;
+                    sumFac += p;
+                }
+            }
+
+            return vec4(sumCol / sumFac, 1.0f);
+        });
+        endMark("Bilateral filter spend: %fs\n");
+        cv::imshow("Output0", output1);
 
         StageProperties assets {
             {}, { &tex0 }, {}, 
             {
-                glm::vec4(50.0f, 65.0f, 1.0f, 16.0f) // { sigmaSpace, sigmaColor } 
+                glm::vec4(6.0f, 65.0f, 1.0f, 16.0f) // { sigmaSpace, sigmaColor } 
             },
             "../shaders/bilateralFilter.spv"
         };
@@ -70,6 +103,8 @@ int main()
             
             output.render(age);
 
+            avgFPS = glm::mix(avgFPS, 1.0f / endMark(""), 0.4f);
+
             output.show("Output");
 
             age += 1;
@@ -79,10 +114,9 @@ int main()
                 break;
             }
 
-            avgFPS = glm::mix(avgFPS, 1.0f / endMark(""), 0.2f);
         }
 
-        Log("bilateralFilter with vulkan FPS: %f; use %f s to complete one frame.\n", avgFPS, 1.0f / avgFPS);
+        Log("bilateralFilter with vulkan spend: %fs\n", 1.0f / avgFPS);
 
     }
     cleanupVulkan();
