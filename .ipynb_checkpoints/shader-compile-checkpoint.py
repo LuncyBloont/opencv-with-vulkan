@@ -55,7 +55,7 @@ def compile(path: str):
 
     if result != 0:
         print('Failed to compile...')
-        print('\n----------ENTER---!!!!!!!!!!!!!---ENTER------------\a')
+        print('\n----------ENTER---!!!!!!!!!!!!!---ENTER------------')
         input()
 
     print('Done\n')
