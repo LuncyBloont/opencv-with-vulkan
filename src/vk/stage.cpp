@@ -174,14 +174,24 @@ void Stage::createEtc()
 
 }
 
-void Stage::show(const char* windowName) const
+int Stage::show(const char* windowName) const
 {
+    struct Pack{
+        const char* wname;
+        int keyCode;
+    } pack { windowName, 0 };
+
     if (frame->showAge < age)
     {
-        frame->apply();
+        frame->peek([](GPUMat* self, void* data) {
+            Pack* pack = reinterpret_cast<Pack*>(data);
+            cv::imshow(pack->wname, *self->cpuData);
+            pack->keyCode = cv::pollKey();
+        }, &pack);
         frame->showAge = age;
     }
-    cv::imshow(windowName, data);
+    
+    return pack.keyCode;
 }
 
 void Stage::createShader()

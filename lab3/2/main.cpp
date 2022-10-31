@@ -43,11 +43,10 @@ int main()
 
             goutput.render(age);
 
-            goutput.show("Output");
-
-            int key = cv::pollKey();
-
-            if (key == 'q') break;
+            if (goutput.show("Output") == 'q')
+            {
+                break;
+            }
 
             age += 1;
         }

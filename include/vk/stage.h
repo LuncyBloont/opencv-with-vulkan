@@ -114,7 +114,7 @@ public:
     Stage& operator=(const Stage&& o) = delete;
 
     void render(uint32_t newAge);
-    void show(const char* windowName) const;
+    int show(const char* windowName) const;
 
     GPUMat* getGPUMat();
 

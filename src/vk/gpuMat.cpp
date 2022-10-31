@@ -5,6 +5,7 @@
 #include "helper.h"
 #include "imageHelper.h"
 #include "opencv2/core/mat.hpp"
+#include "opencv2/highgui.hpp"
 #include "shader.h"
 #include "vk/vkenv.h"
 #include "vk/vkinfo.h"
@@ -205,9 +206,8 @@ void transitionImageLayout(VkImage image, VkFormat format, ImageLayoutTransition
 uint32_t GPUMat::width() const { return uint32_t(cpuData->cols); }
 uint32_t GPUMat::height() const { return uint32_t(cpuData->rows); }
 
-void GPUMat::apply()
+void GPUMat::makeValid()
 {
-    
     if (cpuData->channels() == 3)
     {
         cv::Mat tmp;
@@ -221,6 +221,11 @@ void GPUMat::apply()
         }
         *cpuData = tmp;
     }
+}
+
+void GPUMat::apply()
+{
+    makeValid();
 
     generateMipmaps(*cpuData, mipmaps, levels, HDR);
 
@@ -258,6 +263,28 @@ void GPUMat::apply()
 
         imageReadFromGPUBuffer->mapMem();
         memcpy(cpuData->data, imageReadFromGPUBuffer->data, cpuData->total() * cpuData->elemSize());
+        imageReadFromGPUBuffer->unmapMem();
+        
+        transitionImageLayout(image, format, 0, { VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL });
+    }
+}
+
+void GPUMat::peek(void (*func)(GPUMat* self, void* userData), void* data)
+{
+    makeValid();
+    if (readable == WRITE_MAT)
+    {
+        transitionImageLayout(image, format, 0, { VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL });
+
+        copyImageToBuffer(image, cpuData->cols, cpuData->rows, 0, imageReadFromGPUBuffer->buffer);
+
+        imageReadFromGPUBuffer->mapMem();
+        
+        uint8_t* old = cpuData->data;
+        cpuData->data = reinterpret_cast<uint8_t*>(imageReadFromGPUBuffer->data);
+        func(this, data);
+        cpuData->data = old;
+
         imageReadFromGPUBuffer->unmapMem();
         
         transitionImageLayout(image, format, 0, { VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL });

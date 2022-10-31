@@ -126,15 +126,12 @@ int main()
 
             avgFPS = glm::mix(avgFPS, 1.0f / endMark(""), 0.4f);
 
-            output.show("Output");
-
-            age += 1;
-            
-            if (cv::pollKey() == 'q')
+            if (output.show("Output") == 'q')
             {
                 break;
             }
 
+            age += 1;
         }
 
         Log("bilateralFilter with vulkan spend: %fs\n", 1.0f / avgFPS);

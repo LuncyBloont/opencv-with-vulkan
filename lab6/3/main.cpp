@@ -53,9 +53,7 @@ int main()
         while (true) {
             markTime();
             frame.render(age);
-            frame.show("Output");
-
-            if (cv::pollKey() == 'q')
+            if (frame.show("Output") == 'q')
             {
                 break;
             }

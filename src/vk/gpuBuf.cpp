@@ -53,6 +53,7 @@ GPUBuffer::~GPUBuffer()
 
 void GPUBuffer::mapMem()
 {
+    lock.lock();
     if (usage == VK_BUFFER_USAGE_TRANSFER_SRC_BIT)
     {
         vkMapMemory(gVkDevice, memory.area->vulkanMemory(), memory.ptr, memoryRequirements.size, 0, &data);
@@ -64,6 +65,7 @@ void GPUBuffer::mapMem()
     else 
     {
         LogErr("Device local memory buffer can't be maped.\n");
+        lock.unlock();
         throw std::runtime_error("map device local memory");
     }
 }
@@ -80,9 +82,11 @@ void GPUBuffer::unmapMem()
     }
     else 
     {
+        lock.unlock();
         LogErr("Device local memory buffer can't be unmaped.\n");
         throw std::runtime_error("unmap device local memory");
     }
+    lock.unlock();
 }
 
 

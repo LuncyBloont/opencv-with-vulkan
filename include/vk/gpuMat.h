@@ -58,6 +58,8 @@ struct GPUMat
     virtual ~GPUMat();
 
     void apply();
+    void peek(void (*func)(GPUMat* self, void* userData), void* data = nullptr);
+    void makeValid();
 
     GPUMat(const GPUMat&) = delete;
     GPUMat(const GPUMat&&) = delete;

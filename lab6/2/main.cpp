@@ -81,8 +81,7 @@ int main()
         while (true) {
             markTime();
             mainImage.render(age);
-            mainImage.show("Output");
-            if (cv::pollKey() == 'q')
+            if (mainImage.show("Output") == 'q')
             {
                 break;
             }

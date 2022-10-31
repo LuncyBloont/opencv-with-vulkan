@@ -3,6 +3,7 @@
 
 #include "gpuMem.h"
 #include "vulkan/vulkan_core.h"
+#include <mutex>
 
 struct GPUBuffer
 {
@@ -10,6 +11,7 @@ struct GPUBuffer
     VkMemoryRequirements memoryRequirements;
     GPUPtr memory;
     VkBufferUsageFlags usage;
+    std::mutex lock;
 
     void* data;
 
