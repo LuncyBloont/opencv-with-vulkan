@@ -6,7 +6,7 @@
 #include "vulkan/vulkan_core.h"
 #include <stdexcept>
 
-GPUBuffer::GPUBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkBufferUsageFlags transferUsage)
+mltsg::GPUBuffer::GPUBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkBufferUsageFlags transferUsage)
 {
     DEFAULT_BUFFER bufInfo{};
     bufInfo.size = size;
@@ -14,44 +14,44 @@ GPUBuffer::GPUBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkBufferUsageF
 
     this->usage = usage;
 
-    trydo(VK_SUCCESS) = vkCreateBuffer(gVkDevice, &bufInfo, GVKALC, &buffer);
+    trydo(VK_SUCCESS) = vkCreateBuffer(gVkDevice, &bufInfo, MLTSG_GVKALC, &buffer);
 
     vkGetBufferMemoryRequirements(gVkDevice, buffer, &memoryRequirements);
 
     switch (usage) {
         case VK_BUFFER_USAGE_VERTEX_BUFFER_BIT:
-            memory = gVertexMemory.memoryAllocate(memoryRequirements, memoryRequirements.size, DEFAULT_V_MEM_SIZE,
+            memory = gVertexMemory.memoryAllocate(memoryRequirements, memoryRequirements.size, MLTSG_DEFAULT_V_MEM_SIZE,
                 VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
             break;
         case VK_BUFFER_USAGE_TRANSFER_SRC_BIT:
-            memory = gTransMemory.memoryAllocate(memoryRequirements, memoryRequirements.size, DEFAULT_TRANS_SIZE,
+            memory = gTransMemory.memoryAllocate(memoryRequirements, memoryRequirements.size, MLTSG_DEFAULT_TRANS_SIZE,
                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
             break;
         case VK_BUFFER_USAGE_TRANSFER_DST_BIT:
-            memory = gReadMemory.memoryAllocate(memoryRequirements, memoryRequirements.size, DEFAULT_TRANS_SIZE,
+            memory = gReadMemory.memoryAllocate(memoryRequirements, memoryRequirements.size, MLTSG_DEFAULT_TRANS_SIZE,
                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
             break;
         case VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT:
-            memory = gUniformMemory.memoryAllocate(memoryRequirements, memoryRequirements.size, DEFAULT_U_MEM_SIZE,
+            memory = gUniformMemory.memoryAllocate(memoryRequirements, memoryRequirements.size, MLTSG_DEFAULT_U_MEM_SIZE,
                 VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
             break;
         case VK_BUFFER_USAGE_INDEX_BUFFER_BIT:
-            memory = gIndexMemory.memoryAllocate(memoryRequirements, memoryRequirements.size, DEFAULT_I_MEM_SIZE,
+            memory = gIndexMemory.memoryAllocate(memoryRequirements, memoryRequirements.size, MLTSG_DEFAULT_I_MEM_SIZE,
                 VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
             break;
         default:
-            LogErr("Unknown buffer usage...\n");
+            mltsg::LogErr("Unknown buffer usage...\n");
             throw std::runtime_error("buffer usage");
     }
     vkBindBufferMemory(gVkDevice, buffer, memory.area->vulkanMemory(), memory.ptr);
 }
 
-GPUBuffer::~GPUBuffer()
+mltsg::GPUBuffer::~GPUBuffer()
 {
-    vkDestroyBuffer(gVkDevice, buffer, GVKALC);
+    vkDestroyBuffer(gVkDevice, buffer, MLTSG_GVKALC);
 }
 
-void GPUBuffer::mapMem()
+void mltsg::GPUBuffer::mapMem()
 {
     lock.lock();
     if (usage == VK_BUFFER_USAGE_TRANSFER_SRC_BIT)
@@ -64,13 +64,13 @@ void GPUBuffer::mapMem()
     }
     else 
     {
-        LogErr("Device local memory buffer can't be maped.\n");
+        mltsg::LogErr("Device local memory buffer can't be maped.\n");
         lock.unlock();
         throw std::runtime_error("map device local memory");
     }
 }
 
-void GPUBuffer::unmapMem()
+void mltsg::GPUBuffer::unmapMem()
 {
     if (usage == VK_BUFFER_USAGE_TRANSFER_SRC_BIT)
     {
@@ -83,7 +83,7 @@ void GPUBuffer::unmapMem()
     else 
     {
         lock.unlock();
-        LogErr("Device local memory buffer can't be unmaped.\n");
+        mltsg::LogErr("Device local memory buffer can't be unmaped.\n");
         throw std::runtime_error("unmap device local memory");
     }
     lock.unlock();

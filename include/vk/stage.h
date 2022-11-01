@@ -12,6 +12,9 @@
 #include <string>
 #include <vector>
 
+namespace mltsg 
+{
+
 extern GPUBuffer* uniformSrcBuffer;
 
 extern GPUBuffer* meshSrcBuffer;
@@ -23,18 +26,18 @@ class Stage;
 
 struct StageProperties
 {
-    std::array<Stage*, REFERENCE_COUNT> reference;
-    std::array<GPUMat*, TEXTURES_COUNT> textures;
+    std::array<Stage*, MLTSG_REFERENCE_COUNT> reference;
+    std::array<GPUMat*, MLTSG_TEXTURES_COUNT> textures;
 
     std::array<glm::mat4x4, 8> uniMat;   
     std::array<glm::vec4, 8> uniVec; // custom vec4 x 8
 /* 
-system vec4 x (REFERENCE_COUNT + TEXTURES_COUNT + 1):
-0 to REFERENCE_COUNT - 1: reference[0 to REFERENCE_COUNT] info { width, height, mipmapLevel, 0.0 }    
-REFERENCE_COUNT to REFERENCE_COUNT + TEXTURES_COUNT - 1: textures[0 to TEXTURES_COUNT] info { width, height, mipmapLevel, 0.0 }   
-REFERENCE_COUNT + TEXTURES_COUNT: time { s, 1/2s, ms, freme count }
-REFERENCE_COUNT + TEXTURES_COUNT + 1: { frame width, frame height, age, 1/2age } 
-REFERENCE_COUNT + TEXTURES_COUNT + 2: { mouseX, mouseY, mouseLBT, mouseRBT }
+system vec4 x (MLTSG_REFERENCE_COUNT + MLTSG_TEXTURES_COUNT + 1):
+0 to MLTSG_REFERENCE_COUNT - 1: reference[0 to MLTSG_REFERENCE_COUNT] info { width, height, mipmapLevel, 0.0 }    
+MLTSG_REFERENCE_COUNT to MLTSG_REFERENCE_COUNT + MLTSG_TEXTURES_COUNT - 1: textures[0 to MLTSG_TEXTURES_COUNT] info { width, height, mipmapLevel, 0.0 }   
+MLTSG_REFERENCE_COUNT + MLTSG_TEXTURES_COUNT: time { s, 1/2s, ms, freme count }
+MLTSG_REFERENCE_COUNT + MLTSG_TEXTURES_COUNT + 1: { frame width, frame height, age, 1/2age } 
+MLTSG_REFERENCE_COUNT + MLTSG_TEXTURES_COUNT + 2: { mouseX, mouseY, mouseLBT, mouseRBT }
 */
 
     const std::string shaderPath;
@@ -45,7 +48,7 @@ REFERENCE_COUNT + TEXTURES_COUNT + 2: { mouseX, mouseY, mouseLBT, mouseRBT }
 struct DefaultUniform
 {
     alignas(16) glm::mat4 matrix[8];
-    alignas(16) glm::vec4 vector[8 + REFERENCE_COUNT + TEXTURES_COUNT + 3];
+    alignas(16) glm::vec4 vector[8 + MLTSG_REFERENCE_COUNT + MLTSG_TEXTURES_COUNT + 3];
 };
 
 struct ScreenMesh
@@ -136,5 +139,7 @@ void disableUnifromTransfer();
 
 void enableMeshTransfer();
 void disableMeshTransfer();
+
+}
 
 #endif

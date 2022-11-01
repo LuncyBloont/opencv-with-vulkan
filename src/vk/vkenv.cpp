@@ -24,37 +24,37 @@
 #include <vcruntime_string.h>
 #include <vector>
 
-VkInstance gVkInstance = VK_NULL_HANDLE;
+VkInstance mltsg::gVkInstance = VK_NULL_HANDLE;
 
-VkPhysicalDevice gVkPhysicalDevice;
-VkDevice gVkDevice;
+VkPhysicalDevice mltsg::gVkPhysicalDevice;
+VkDevice mltsg::gVkDevice;
 
-VkPhysicalDeviceFeatures gVkPhysicalDeviceFeatures;
-VkPhysicalDeviceProperties gVkPhysicalDeviceProperties;
+VkPhysicalDeviceFeatures mltsg::gVkPhysicalDeviceFeatures;
+VkPhysicalDeviceProperties mltsg::gVkPhysicalDeviceProperties;
 
-VkDebugUtilsMessengerEXT gVkDebuger;
+VkDebugUtilsMessengerEXT mltsg::gVkDebuger;
 
-GPUMemsArray<3> gImgMemory("Image Memory");
-GPUMemsArray<2> gVertexMemory("Vertex Memory");
-GPUMemsArray<2> gIndexMemory("Index Memory");
-GPUMemsArray<2> gUniformMemory("Uniform Memory");
-GPUMemsArray<2> gTransMemory("Trans Memory");
-GPUMemsArray<2> gReadMemory("Read Memory");
+mltsg::GPUMemsArray<3> mltsg::gImgMemory("Image Memory");
+mltsg::GPUMemsArray<2> mltsg::gVertexMemory("Vertex Memory");
+mltsg::GPUMemsArray<2> mltsg::gIndexMemory("Index Memory");
+mltsg::GPUMemsArray<2> mltsg::gUniformMemory("Uniform Memory");
+mltsg::GPUMemsArray<2> mltsg::gTransMemory("Trans Memory");
+mltsg::GPUMemsArray<2> mltsg::gReadMemory("Read Memory");
 
-VkCommandPool gVkCommandPool = nullptr;
+VkCommandPool mltsg::gVkCommandPool = nullptr;
 
-uint32_t gVkGraphicsIndice = 0;
+uint32_t mltsg::gVkGraphicsIndice = 0;
 
-VkQueue gVkGraphicsQueue = VK_NULL_HANDLE;
+VkQueue mltsg::gVkGraphicsQueue = VK_NULL_HANDLE;
 
-GPUMat* noneRefTexture = nullptr;
+mltsg::GPUMat* mltsg::noneRefTexture = nullptr;
 
-cv::Mat noneRefDate;
+cv::Mat mltsg::noneRefDate;
 
 void setupVkDebug()
 {
-    std::map<std::string, ConfigItem> extensionsConfig;
-    readConfig(extensionsConfig, EXTENSIONS_CONFIG);
+    std::map<std::string, mltsg::ConfigItem> extensionsConfig;
+    readConfig(extensionsConfig, MLTSG_EXTENSIONS_CONFIG);
 
     if (!extensionsConfig.at("VK_EXT_debug_utils").Boolean())
     {
@@ -62,15 +62,15 @@ void setupVkDebug()
     }
 
     auto setup = PFN_vkCreateDebugUtilsMessengerEXT(
-        vkGetInstanceProcAddr(gVkInstance, "vkCreateDebugUtilsMessengerEXT")
+        vkGetInstanceProcAddr(mltsg::gVkInstance, "vkCreateDebugUtilsMessengerEXT")
     );
-    setup(gVkInstance, &the_DEFAULT_DEBUGER, GVKALC, &gVkDebuger);
+    setup(mltsg::gVkInstance, &mltsg::the_DEFAULT_DEBUGER, MLTSG_GVKALC, &mltsg::gVkDebuger);
 }
 
 void cleanupVkDebug()
 {
-    std::map<std::string, ConfigItem> extensionsConfig;
-    readConfig(extensionsConfig, EXTENSIONS_CONFIG);
+    std::map<std::string, mltsg::ConfigItem> extensionsConfig;
+    readConfig(extensionsConfig, MLTSG_EXTENSIONS_CONFIG);
 
     if (!extensionsConfig.at("VK_EXT_debug_utils").Boolean())
     {
@@ -78,14 +78,14 @@ void cleanupVkDebug()
     }
 
     auto cleanup = PFN_vkDestroyDebugUtilsMessengerEXT(
-        vkGetInstanceProcAddr(gVkInstance, "vkDestroyDebugUtilsMessengerEXT")
+        vkGetInstanceProcAddr(mltsg::gVkInstance, "vkDestroyDebugUtilsMessengerEXT")
     );
-    cleanup(gVkInstance, gVkDebuger, GVKALC);
+    cleanup(mltsg::gVkInstance, mltsg::gVkDebuger, MLTSG_GVKALC);
 }
 
 void setupInstance()
 {
-    DEFAULT_VULKAN vulkanInfo{};
+    mltsg::DEFAULT_VULKAN vulkanInfo{};
 
     // create default extensions config and read custom config:
 
@@ -95,15 +95,15 @@ void setupInstance()
     extensions.resize(availableExtensionCount);
     vkEnumerateInstanceExtensionProperties(nullptr, &availableExtensionCount, extensions.data());
 
-    std::vector<ConfigItem> extensionsConfig(availableExtensionCount);
+    std::vector<mltsg::ConfigItem> extensionsConfig(availableExtensionCount);
     for (size_t i = 0; i < availableExtensionCount; ++i) 
     { 
-        extensionsConfig[i] = { extensions[i].extensionName, ConfigType::Boolean, false };
+        extensionsConfig[i] = { extensions[i].extensionName, mltsg::ConfigType::Boolean, false };
     }
 
-    makeConfig(EXTENSIONS_CONFIG, extensionsConfig);
+    makeConfig(MLTSG_EXTENSIONS_CONFIG, extensionsConfig);
 
-    readConfig(extensionsConfig, EXTENSIONS_CONFIG);
+    readConfig(extensionsConfig, MLTSG_EXTENSIONS_CONFIG);
     print("\033[34;47mvulkan extensions\033[0m", extensionsConfig);
 
     std::vector<const char*> usedExtensions;
@@ -115,7 +115,7 @@ void setupInstance()
         }
     }
 
-    vulkanInfo.enabledExtensionCount = U32(usedExtensions.size());
+    vulkanInfo.enabledExtensionCount = MLTSG_U32(usedExtensions.size());
     vulkanInfo.ppEnabledExtensionNames = usedExtensions.data();
 
     // create default layers config and read custom config:
@@ -126,15 +126,15 @@ void setupInstance()
     layers.resize(availableLayerCount);
     vkEnumerateInstanceLayerProperties(&availableLayerCount, layers.data());
 
-    std::vector<ConfigItem> layerConfig(availableLayerCount);
+    std::vector<mltsg::ConfigItem> layerConfig(availableLayerCount);
     for (size_t i = 0; i < availableLayerCount; ++i) 
     { 
-        layerConfig[i] = { layers[i].layerName, ConfigType::Boolean, false };
+        layerConfig[i] = { layers[i].layerName, mltsg::ConfigType::Boolean, false };
     }
 
-    makeConfig(LAYERS_CONFIG, layerConfig);
+    makeConfig(MLTSG_LAYERS_CONFIG, layerConfig);
 
-    readConfig(layerConfig, LAYERS_CONFIG);
+    readConfig(layerConfig, MLTSG_LAYERS_CONFIG);
     print("\033[34;47mvulkan layers\033[0m", layerConfig);
 
     std::vector<const char*> usedLayers;
@@ -146,18 +146,18 @@ void setupInstance()
         }
     }
 
-    vulkanInfo.enabledLayerCount = U32(usedLayers.size());
+    vulkanInfo.enabledLayerCount = MLTSG_U32(usedLayers.size());
     vulkanInfo.ppEnabledLayerNames = usedLayers.data();
 
     // create instance:
 
-    trydo(VK_SUCCESS) = vkCreateInstance(&vulkanInfo, GVKALC, &gVkInstance);
+    mltsg::trydo(VK_SUCCESS) = vkCreateInstance(&vulkanInfo, MLTSG_GVKALC, &mltsg::gVkInstance);
 }
 
 void configDeviceFeatures(VkPhysicalDeviceFeatures* features)
 {
     memset(features, 0, sizeof(VkPhysicalDeviceFeatures));
-    if (gVkPhysicalDeviceFeatures.samplerAnisotropy)
+    if (mltsg::gVkPhysicalDeviceFeatures.samplerAnisotropy)
     {
         features->samplerAnisotropy = VK_TRUE;
     }
@@ -168,20 +168,20 @@ void setupDevice()
     // choose physical device:
 
     uint32_t deviceCount;
-    vkEnumeratePhysicalDevices(gVkInstance, &deviceCount, nullptr);
+    vkEnumeratePhysicalDevices(mltsg::gVkInstance, &deviceCount, nullptr);
     std::vector<VkPhysicalDevice> devices(deviceCount);
-    vkEnumeratePhysicalDevices(gVkInstance, &deviceCount, devices.data());
+    vkEnumeratePhysicalDevices(mltsg::gVkInstance, &deviceCount, devices.data());
 
-    std::vector<ConfigItem> deviceConfig;
+    std::vector<mltsg::ConfigItem> deviceConfig;
     std::map<std::string, VkPhysicalDevice> deviceSet;
     for (const auto& c : devices)
     {
         VkPhysicalDeviceProperties physicalDeviceProperties;
         vkGetPhysicalDeviceProperties(c, &physicalDeviceProperties);
-        deviceConfig.push_back({ physicalDeviceProperties.deviceName, ConfigType::String, CFG("Off") });
+        deviceConfig.push_back({ physicalDeviceProperties.deviceName, mltsg::ConfigType::String, MLTSG_CFG("Off") });
         deviceSet.insert({ physicalDeviceProperties.deviceName, c });
 
-        Log("\n%s: \n    type: %d\n    API version: %d\n    driver version: %d\n",
+        mltsg::Log("\n%s: \n    type: %d\n    API version: %d\n    driver version: %d\n",
             physicalDeviceProperties.deviceName,
             physicalDeviceProperties.deviceType,
             physicalDeviceProperties.apiVersion,
@@ -201,21 +201,21 @@ void setupDevice()
             allfeaturesCount += 1;
         }
 
-        Log("    features count: %d/%d\n", featuresCount, allfeaturesCount);
+        mltsg::Log("    features count: %d/%d\n", featuresCount, allfeaturesCount);
     }
 
-    makeConfig(DEVICES_CONFIG, deviceConfig, CFG("On"));
+    makeConfig(MLTSG_DEVICES_CONFIG, deviceConfig, MLTSG_CFG("On"));
 
-    readConfig(deviceConfig, DEVICES_CONFIG);
+    readConfig(deviceConfig, MLTSG_DEVICES_CONFIG);
     print("\033[34;45mDevice use\033[0m", deviceConfig);
 
     for (const auto& devConfig : deviceConfig)
     {
         if (devConfig.String() == "On" || devConfig.String() == "on")
         {
-            gVkPhysicalDevice = deviceSet.at(devConfig.key);
-            vkGetPhysicalDeviceFeatures(gVkPhysicalDevice, &gVkPhysicalDeviceFeatures);
-            vkGetPhysicalDeviceProperties(gVkPhysicalDevice, &gVkPhysicalDeviceProperties);
+            mltsg::gVkPhysicalDevice = deviceSet.at(devConfig.key);
+            vkGetPhysicalDeviceFeatures(mltsg::gVkPhysicalDevice, &mltsg::gVkPhysicalDeviceFeatures);
+            vkGetPhysicalDeviceProperties(mltsg::gVkPhysicalDevice, &mltsg::gVkPhysicalDeviceProperties);
             break;
         }
     }
@@ -225,34 +225,34 @@ void setupDevice()
     VkPhysicalDeviceFeatures deviceFeatures = {};
 
     uint32_t queuefamilyCount = 0;
-    vkGetPhysicalDeviceQueueFamilyProperties(gVkPhysicalDevice, &queuefamilyCount, nullptr);
+    vkGetPhysicalDeviceQueueFamilyProperties(mltsg::gVkPhysicalDevice, &queuefamilyCount, nullptr);
     std::vector<VkQueueFamilyProperties> queueFamilies(queuefamilyCount);
-    vkGetPhysicalDeviceQueueFamilyProperties(gVkPhysicalDevice, &queuefamilyCount, queueFamilies.data());
+    vkGetPhysicalDeviceQueueFamilyProperties(mltsg::gVkPhysicalDevice, &queuefamilyCount, queueFamilies.data());
 
     bool queueFound = false;
-    gVkGraphicsIndice = 0;
+    mltsg::gVkGraphicsIndice = 0;
     for (size_t i = 0; i < queueFamilies.size(); ++i)
     {
         if (queueFamilies[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)
         {
-            gVkGraphicsIndice = U32(i);
+            mltsg::gVkGraphicsIndice = MLTSG_U32(i);
             queueFound = true;
         }
     }
 
     if (!queueFound)
     {
-        LogErr("Failed to find graphics queue.\n");
+        mltsg::LogErr("Failed to find graphics queue.\n");
         throw std::runtime_error("graphics queue");
     }
 
-    DEFAULT_GRAPHICS_QUEUE graphicsQueue{};
+    mltsg::DEFAULT_GRAPHICS_QUEUE graphicsQueue{};
     graphicsQueue.queueCount = 1;
-    graphicsQueue.queueFamilyIndex = gVkGraphicsIndice;
+    graphicsQueue.queueFamilyIndex = mltsg::gVkGraphicsIndice;
     float graphicsPriority = 1.0f;
     graphicsQueue.pQueuePriorities = &graphicsPriority;
     
-    DEFAULT_DEVICE deviceInfo{};
+    mltsg::DEFAULT_DEVICE deviceInfo{};
     deviceInfo.pQueueCreateInfos = &graphicsQueue;
     deviceInfo.queueCreateInfoCount = 1;
 
@@ -260,64 +260,64 @@ void setupDevice()
 
     deviceInfo.pEnabledFeatures = &deviceFeatures;
 
-    trydo(VK_SUCCESS) = vkCreateDevice(gVkPhysicalDevice, &deviceInfo, GVKALC, &gVkDevice);
+    mltsg::trydo(VK_SUCCESS) = vkCreateDevice(mltsg::gVkPhysicalDevice, &deviceInfo, MLTSG_GVKALC, &mltsg::gVkDevice);
 
-    vkGetDeviceQueue(gVkDevice, gVkGraphicsIndice, 0, &gVkGraphicsQueue);
+    vkGetDeviceQueue(mltsg::gVkDevice, mltsg::gVkGraphicsIndice, 0, &mltsg::gVkGraphicsQueue);
 }
 
 void cleaupDevice()
 {
-    vkDestroyDevice(gVkDevice, GVKALC);
+    vkDestroyDevice(mltsg::gVkDevice, MLTSG_GVKALC);
 }
 
 void createCommandPool()
 {
-    DEFAULT_COMMAND_POOL commandPoolInfo{};
-    commandPoolInfo.queueFamilyIndex = gVkGraphicsIndice;
+    mltsg::DEFAULT_COMMAND_POOL commandPoolInfo{};
+    commandPoolInfo.queueFamilyIndex = mltsg::gVkGraphicsIndice;
 
-    trydo(VK_SUCCESS) = vkCreateCommandPool(gVkDevice, &commandPoolInfo, GVKALC, &gVkCommandPool);
+    mltsg::trydo(VK_SUCCESS) = vkCreateCommandPool(mltsg::gVkDevice, &commandPoolInfo, MLTSG_GVKALC, &mltsg::gVkCommandPool);
 }
 
 void destoryCommandPool()
 {
-    vkDestroyCommandPool(gVkDevice, gVkCommandPool, GVKALC);
+    vkDestroyCommandPool(mltsg::gVkDevice, mltsg::gVkCommandPool, MLTSG_GVKALC);
 }
 
-void initializeVulkan()
+void mltsg::initializeVulkan()
 {
     setupInstance();
     setupVkDebug();
     setupDevice();
     createCommandPool();
 
-    enableImageTransferBuffer();
-    enableUnifromTransfer();
-    enableMeshTransfer();
+    mltsg::enableImageTransferBuffer();
+    mltsg::enableUnifromTransfer();
+    mltsg::enableMeshTransfer();
 
-    defaultLinearSampler = new GSampler(SampleUV::Repeat, SamplePoint::Linear);
+    mltsg::defaultLinearSampler = new mltsg::GSampler(mltsg::SampleUV::Repeat, mltsg::SamplePoint::Linear);
 
     // create default texture
     noneRefDate.create(512, 512, CV_8UC2);
-    process<U8>(noneRefDate, [&](glm::vec2 uv) {
+    mltsg::process<MLTSG_U8>(noneRefDate, [&](glm::vec2 uv) {
         glm::vec4 c0 = glm::vec4(1.0f, 0.7f, 1.0f, 1.0f);
         glm::vec4 c1 = glm::vec4(0.1f, 0.1f, 0.1f, 1.0f);
         glm::vec2 xy = uv * glm::vec2(noneRefDate.cols, noneRefDate.rows) / 32.0f;
         float lerp = float((int(xy.x) % 2 ^ (int(xy.y) % 2)));
         return glm::mix(c0, c1, lerp);
     });
-    noneRefTexture = new GPUMat(&noneRefDate, READ_MAT, true, USE_RAW);
+    noneRefTexture = new mltsg::GPUMat(&noneRefDate, MLTSG_READ_MAT, true, MLTSG_USE_RAW);
     noneRefTexture->apply();
 }
 
-void cleanupVulkan()
+void mltsg::cleanupVulkan()
 {
     delete noneRefTexture;
 
-    delete defaultLinearSampler;
+    delete mltsg::defaultLinearSampler;
 
-    disableMeshTransfer();
-    disableUnifromTransfer();
-    disableImageTransferBuffer();
+    mltsg::disableMeshTransfer();
+    mltsg::disableUnifromTransfer();
+    mltsg::disableImageTransferBuffer();
 
     gImgMemory.memoryDisable();
     gVertexMemory.memoryDisable();
@@ -329,28 +329,28 @@ void cleanupVulkan()
     destoryCommandPool();
     cleaupDevice();
     cleanupVkDebug();
-    vkDestroyInstance(gVkInstance, GVKALC);
+    vkDestroyInstance(gVkInstance, MLTSG_GVKALC);
 }
 
-VkCommandBuffer beginCommandOnce()
+VkCommandBuffer mltsg::beginCommandOnce()
 {
     VkCommandBuffer cmdBuf;
 
-    DEFAULT_COMMAND_BUFFER cmdBufferInfo{};
+    mltsg::DEFAULT_COMMAND_BUFFER cmdBufferInfo{};
     cmdBufferInfo.commandPool = gVkCommandPool;
 
-    trydo(VK_SUCCESS) = vkAllocateCommandBuffers(gVkDevice, &cmdBufferInfo, &cmdBuf);
+    mltsg::trydo(VK_SUCCESS) = vkAllocateCommandBuffers(gVkDevice, &cmdBufferInfo, &cmdBuf);
 
-    vkBeginCommandBuffer(cmdBuf, &the_ONE_TIME_CMD);
+    vkBeginCommandBuffer(cmdBuf, &mltsg::the_ONE_TIME_CMD);
 
     return cmdBuf;
 }
 
-void endCommandOnce(VkCommandBuffer cmdBuf, VkFence fence)
+void mltsg::endCommandOnce(VkCommandBuffer cmdBuf, VkFence fence)
 {
     vkEndCommandBuffer(cmdBuf);
 
-    ONE_TIME_SUBMIT submitInfo{};
+    mltsg::ONE_TIME_SUBMIT submitInfo{};
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &cmdBuf;
     

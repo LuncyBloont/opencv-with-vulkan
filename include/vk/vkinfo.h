@@ -7,16 +7,19 @@
 #include <iostream>
 #include <cstdint>
 
-#define VKINFO_DECLARE(type, name, ...) \
+namespace mltsg 
+{
+
+#define MLTSG_VKINFO_DECLARE(type, name, ...) \
     const static struct name : type { name() { __VA_ARGS__ } } the_##name
 
-#define GVKALC nullptr
+#define MLTSG_GVKALC nullptr
 
-#define ECHO_VULKAN_VERBOSE false
+#define MLTSG_ECHO_VULKAN_VERBOSE false
 
 typedef std::uint32_t uint32_t;
 
-VKINFO_DECLARE(VkApplicationInfo, DEFAULT_APPINFO, 
+MLTSG_VKINFO_DECLARE(VkApplicationInfo, DEFAULT_APPINFO, 
     this->applicationVersion = VK_MAKE_VERSION(0, 0, 1);
     this->apiVersion = VK_API_VERSION_1_0;
     this->engineVersion = 0;
@@ -26,7 +29,7 @@ VKINFO_DECLARE(VkApplicationInfo, DEFAULT_APPINFO,
     this->sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
 );
 
-VKINFO_DECLARE(VkInstanceCreateInfo, DEFAULT_VULKAN,
+MLTSG_VKINFO_DECLARE(VkInstanceCreateInfo, DEFAULT_VULKAN,
     this->enabledExtensionCount = 0;
     this->enabledLayerCount = 0;
     this->ppEnabledExtensionNames = nullptr;
@@ -37,7 +40,7 @@ VKINFO_DECLARE(VkInstanceCreateInfo, DEFAULT_VULKAN,
     this->pApplicationInfo = &the_DEFAULT_APPINFO;
 );
 
-VKINFO_DECLARE(VkImageCreateInfo, DEFAULT_IMAGE, 
+MLTSG_VKINFO_DECLARE(VkImageCreateInfo, DEFAULT_IMAGE, 
     this->sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
     this->imageType = VK_IMAGE_TYPE_2D;
     this->arrayLayers = 1;
@@ -54,7 +57,7 @@ VKINFO_DECLARE(VkImageCreateInfo, DEFAULT_IMAGE,
     this->usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
 );
 
-VKINFO_DECLARE(VkImageCreateInfo, CPU_IMAGE, 
+MLTSG_VKINFO_DECLARE(VkImageCreateInfo, CPU_IMAGE, 
     this->sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
     this->imageType = VK_IMAGE_TYPE_2D;
     this->arrayLayers = 1;
@@ -71,7 +74,7 @@ VKINFO_DECLARE(VkImageCreateInfo, CPU_IMAGE,
     this->usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 );
 
-VKINFO_DECLARE(VkImageViewCreateInfo, DEFAULT_IMAGE_VIEW, 
+MLTSG_VKINFO_DECLARE(VkImageViewCreateInfo, DEFAULT_IMAGE_VIEW, 
     this->image = VK_NULL_HANDLE;
     this->viewType = VK_IMAGE_VIEW_TYPE_2D;
     this->sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -91,8 +94,8 @@ VKINFO_DECLARE(VkImageViewCreateInfo, DEFAULT_IMAGE_VIEW,
     this->format = VK_FORMAT_R8G8B8A8_SRGB;
 );
 
-VKINFO_DECLARE(VkDebugUtilsMessengerCreateInfoEXT, DEFAULT_DEBUGER,
-    static const _Log_Type_ VkMoreLog({
+MLTSG_VKINFO_DECLARE(VkDebugUtilsMessengerCreateInfoEXT, DEFAULT_DEBUGER,
+    static const _MLTSG_Log_Type_ VkMoreMLTSG_Log({
         "* vulkan *",
         "\033[44;1m",
         "\033[30m",
@@ -115,22 +118,22 @@ VKINFO_DECLARE(VkDebugUtilsMessengerCreateInfoEXT, DEFAULT_DEBUGER,
 
             switch (messageSeverity) {
                 case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
-                    LogErr("VK::: error[%d]@%s> %s\n", pCallbackData->messageIdNumber, pCallbackData->pMessageIdName, pCallbackData->pMessage);
+                    mltsg::LogErr("VK::: error[%d]@%s> %s\n", pCallbackData->messageIdNumber, pCallbackData->pMessageIdName, pCallbackData->pMessage);
                     break;
                 case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
-                    LogWarn("VK::: warn[%d]@%s> %s\n", pCallbackData->messageIdNumber, pCallbackData->pMessageIdName, pCallbackData->pMessage);
+                    mltsg::LogWarn("VK::: warn[%d]@%s> %s\n", pCallbackData->messageIdNumber, pCallbackData->pMessageIdName, pCallbackData->pMessage);
                     break;
                 case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
-                    VkMoreLog("VK::: info[%d]@%s> %s\n", pCallbackData->messageIdNumber, pCallbackData->pMessageIdName, pCallbackData->pMessage);
+                    VkMoreMLTSG_Log("VK::: info[%d]@%s> %s\n", pCallbackData->messageIdNumber, pCallbackData->pMessageIdName, pCallbackData->pMessage);
                     break;
                 case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
-                    if (ECHO_VULKAN_VERBOSE)
+                    if (MLTSG_ECHO_VULKAN_VERBOSE)
                     {
-                        VkMoreLog("VK::: verb[%d]@%s> %s\n", pCallbackData->messageIdNumber, pCallbackData->pMessageIdName, pCallbackData->pMessage);
+                        VkMoreMLTSG_Log("VK::: verb[%d]@%s> %s\n", pCallbackData->messageIdNumber, pCallbackData->pMessageIdName, pCallbackData->pMessage);
                     }
                     break;
                 default:
-                    VkMoreLog("VK::: other[%d]@%s> %s\n", pCallbackData->messageIdNumber, pCallbackData->pMessageIdName, pCallbackData->pMessage);
+                    VkMoreMLTSG_Log("VK::: other[%d]@%s> %s\n", pCallbackData->messageIdNumber, pCallbackData->pMessageIdName, pCallbackData->pMessage);
                     break;
             }
 
@@ -138,7 +141,7 @@ VKINFO_DECLARE(VkDebugUtilsMessengerCreateInfoEXT, DEFAULT_DEBUGER,
     };
 );
 
-VKINFO_DECLARE(VkDeviceQueueCreateInfo, DEFAULT_GRAPHICS_QUEUE, 
+MLTSG_VKINFO_DECLARE(VkDeviceQueueCreateInfo, DEFAULT_GRAPHICS_QUEUE, 
     this->pQueuePriorities = nullptr;
     this->queueCount = 0;
     this->queueFamilyIndex = 0;
@@ -147,7 +150,7 @@ VKINFO_DECLARE(VkDeviceQueueCreateInfo, DEFAULT_GRAPHICS_QUEUE,
     this->sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
 );
 
-VKINFO_DECLARE(VkDeviceCreateInfo, DEFAULT_DEVICE, 
+MLTSG_VKINFO_DECLARE(VkDeviceCreateInfo, DEFAULT_DEVICE, 
     this->pQueueCreateInfos = nullptr;
     this->queueCreateInfoCount = 0;
     this->enabledExtensionCount = 0;
@@ -160,14 +163,14 @@ VKINFO_DECLARE(VkDeviceCreateInfo, DEFAULT_DEVICE,
     this->sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 );
 
-VKINFO_DECLARE(VkMemoryAllocateInfo, DEFAULT_VKMEMORY_INFO, 
+MLTSG_VKINFO_DECLARE(VkMemoryAllocateInfo, DEFAULT_VKMEMORY_INFO, 
     this->allocationSize = 0;
     this->pNext = nullptr;
     this->sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     this->memoryTypeIndex = 0;
 );
 
-VKINFO_DECLARE(VkBufferCreateInfo, TRANSFER_BUFFER, 
+MLTSG_VKINFO_DECLARE(VkBufferCreateInfo, TRANSFER_BUFFER, 
     this->sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
     this->flags = 0;
     this->pNext = nullptr;
@@ -178,21 +181,21 @@ VKINFO_DECLARE(VkBufferCreateInfo, TRANSFER_BUFFER,
     this->usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
 );
 
-VKINFO_DECLARE(VkMemoryAllocateInfo, TRANSFER_MEMORY,
+MLTSG_VKINFO_DECLARE(VkMemoryAllocateInfo, TRANSFER_MEMORY,
     this->allocationSize = 0;
     this->pNext = nullptr;
     this->memoryTypeIndex = 0;
     this->sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 );
 
-VKINFO_DECLARE(VkCommandPoolCreateInfo, DEFAULT_COMMAND_POOL, 
+MLTSG_VKINFO_DECLARE(VkCommandPoolCreateInfo, DEFAULT_COMMAND_POOL, 
     this->flags = 0;
     this->pNext = nullptr;
     this->queueFamilyIndex = 0;
     this->sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 );
 
-VKINFO_DECLARE(VkCommandBufferAllocateInfo, DEFAULT_COMMAND_BUFFER, 
+MLTSG_VKINFO_DECLARE(VkCommandBufferAllocateInfo, DEFAULT_COMMAND_BUFFER, 
     this->commandBufferCount = 1;
     this->commandPool = VK_NULL_HANDLE;
     this->level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
@@ -200,14 +203,14 @@ VKINFO_DECLARE(VkCommandBufferAllocateInfo, DEFAULT_COMMAND_BUFFER,
     this->sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 );
 
-VKINFO_DECLARE(VkCommandBufferBeginInfo, ONE_TIME_CMD, 
+MLTSG_VKINFO_DECLARE(VkCommandBufferBeginInfo, ONE_TIME_CMD, 
     this->pInheritanceInfo = nullptr;
     this->flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
     this->pNext = nullptr;
     this->sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 );
 
-VKINFO_DECLARE(VkSubmitInfo, ONE_TIME_SUBMIT, 
+MLTSG_VKINFO_DECLARE(VkSubmitInfo, ONE_TIME_SUBMIT, 
     this->commandBufferCount = 0;
     this->pCommandBuffers = nullptr;
     this->signalSemaphoreCount = 0;
@@ -219,7 +222,7 @@ VKINFO_DECLARE(VkSubmitInfo, ONE_TIME_SUBMIT,
     this->sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 );
 
-VKINFO_DECLARE(VkImageMemoryBarrier, IMAGE_BARRIER, 
+MLTSG_VKINFO_DECLARE(VkImageMemoryBarrier, IMAGE_BARRIER, 
     this->image = VK_NULL_HANDLE;
     this->pNext = nullptr;
     this->sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -235,7 +238,7 @@ VKINFO_DECLARE(VkImageMemoryBarrier, IMAGE_BARRIER,
     };
 );
 
-VKINFO_DECLARE(VkBufferCreateInfo, DEFAULT_BUFFER,
+MLTSG_VKINFO_DECLARE(VkBufferCreateInfo, DEFAULT_BUFFER,
     this->sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
     this->pNext = nullptr;
     this->flags = 0;
@@ -246,7 +249,7 @@ VKINFO_DECLARE(VkBufferCreateInfo, DEFAULT_BUFFER,
     this->usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
 );
 
-VKINFO_DECLARE(VkRenderPassCreateInfo, DEFAULT_RENDERPASS,
+MLTSG_VKINFO_DECLARE(VkRenderPassCreateInfo, DEFAULT_RENDERPASS,
     this->pNext = nullptr;
     this->sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
     this->attachmentCount = 0;
@@ -258,7 +261,7 @@ VKINFO_DECLARE(VkRenderPassCreateInfo, DEFAULT_RENDERPASS,
     this->flags = 0;
 );
 
-VKINFO_DECLARE(VkGraphicsPipelineCreateInfo, GRAPHICS_PIPELINE, 
+MLTSG_VKINFO_DECLARE(VkGraphicsPipelineCreateInfo, GRAPHICS_PIPELINE, 
     this->basePipelineHandle = VK_NULL_HANDLE;
     this->basePipelineIndex = -1;
     this->flags = 0;
@@ -280,7 +283,7 @@ VKINFO_DECLARE(VkGraphicsPipelineCreateInfo, GRAPHICS_PIPELINE,
     this->subpass = 0;
 );
 
-VKINFO_DECLARE(VkPipelineInputAssemblyStateCreateInfo, TRIANGLE_FAN_INPUT, 
+MLTSG_VKINFO_DECLARE(VkPipelineInputAssemblyStateCreateInfo, TRIANGLE_FAN_INPUT, 
     this->sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
     this->flags = 0;
     this->pNext = nullptr;
@@ -288,7 +291,7 @@ VKINFO_DECLARE(VkPipelineInputAssemblyStateCreateInfo, TRIANGLE_FAN_INPUT,
     this->topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN;
 );
 
-VKINFO_DECLARE(VkPipelineRasterizationStateCreateInfo, FILL_RASTERIZATION, 
+MLTSG_VKINFO_DECLARE(VkPipelineRasterizationStateCreateInfo, FILL_RASTERIZATION, 
     this->sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
     this->flags = 0;
     this->lineWidth = 1.0f;
@@ -303,7 +306,7 @@ VKINFO_DECLARE(VkPipelineRasterizationStateCreateInfo, FILL_RASTERIZATION,
     this->depthBiasSlopeFactor = 0.0f;
 );
 
-VKINFO_DECLARE(VkSamplerCreateInfo, EMPTY_SAMPLER,
+MLTSG_VKINFO_DECLARE(VkSamplerCreateInfo, EMPTY_SAMPLER,
     this->addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;        // customize
     this->addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;        // customize
     this->addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;        // customize
@@ -324,7 +327,7 @@ VKINFO_DECLARE(VkSamplerCreateInfo, EMPTY_SAMPLER,
     this->mipLodBias = 0.0f;
 );
 
-VKINFO_DECLARE(VkPipelineColorBlendStateCreateInfo, NO_BLEND_STATE, 
+MLTSG_VKINFO_DECLARE(VkPipelineColorBlendStateCreateInfo, NO_BLEND_STATE, 
     this->sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
     this->flags = 0;
     this->blendConstants[0] = 0.0f;
@@ -338,7 +341,7 @@ VKINFO_DECLARE(VkPipelineColorBlendStateCreateInfo, NO_BLEND_STATE,
     this->pNext = nullptr;
 );
 
-VKINFO_DECLARE(VkPipelineDepthStencilStateCreateInfo, DEFAULT_DEPTHSTECNIL_STATE,
+MLTSG_VKINFO_DECLARE(VkPipelineDepthStencilStateCreateInfo, DEFAULT_DEPTHSTECNIL_STATE,
     this->sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
     this->pNext = nullptr;
     this->depthBoundsTestEnable = VK_FALSE;
@@ -364,7 +367,7 @@ VKINFO_DECLARE(VkPipelineDepthStencilStateCreateInfo, DEFAULT_DEPTHSTECNIL_STATE
     this->front.passOp = VK_STENCIL_OP_KEEP;
 );
 
-VKINFO_DECLARE(VkPipelineDynamicStateCreateInfo, DEFAULT_DYNAMIC_STATE, 
+MLTSG_VKINFO_DECLARE(VkPipelineDynamicStateCreateInfo, DEFAULT_DYNAMIC_STATE, 
     this->dynamicStateCount = 0;
     this->flags = 0;
     this->pDynamicStates = nullptr;
@@ -372,7 +375,7 @@ VKINFO_DECLARE(VkPipelineDynamicStateCreateInfo, DEFAULT_DYNAMIC_STATE,
     this->sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
 );
 
-VKINFO_DECLARE(VkPipelineMultisampleStateCreateInfo, DEFAULT_MSAA, 
+MLTSG_VKINFO_DECLARE(VkPipelineMultisampleStateCreateInfo, DEFAULT_MSAA, 
     this->alphaToCoverageEnable = VK_FALSE;
     this->alphaToOneEnable = VK_FALSE;
     this->sampleShadingEnable = VK_FALSE;
@@ -384,7 +387,7 @@ VKINFO_DECLARE(VkPipelineMultisampleStateCreateInfo, DEFAULT_MSAA,
     this->pSampleMask = nullptr;
 );
 
-VKINFO_DECLARE(VkPipelineViewportStateCreateInfo, DEFAULT_VIEWPORT, 
+MLTSG_VKINFO_DECLARE(VkPipelineViewportStateCreateInfo, DEFAULT_VIEWPORT, 
     this->viewportCount = 0;
     this->pViewports = nullptr;
     this->scissorCount = 0;
@@ -394,14 +397,14 @@ VKINFO_DECLARE(VkPipelineViewportStateCreateInfo, DEFAULT_VIEWPORT,
     this->sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
 );
 
-VKINFO_DECLARE(VkPipelineTessellationStateCreateInfo, NO_TESSELLATION, 
+MLTSG_VKINFO_DECLARE(VkPipelineTessellationStateCreateInfo, NO_TESSELLATION, 
     this->flags = 0;
     this->patchControlPoints = 1;
     this->pNext = nullptr;
     this->sType = VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO;
 );
 
-VKINFO_DECLARE(VkPipelineVertexInputStateCreateInfo, VERTEX_STATE_FOR_CV, 
+MLTSG_VKINFO_DECLARE(VkPipelineVertexInputStateCreateInfo, VERTEX_STATE_FOR_CV, 
     this->flags = 0;
     this->pNext = nullptr;
     this->sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -411,7 +414,7 @@ VKINFO_DECLARE(VkPipelineVertexInputStateCreateInfo, VERTEX_STATE_FOR_CV,
     this->pVertexBindingDescriptions = nullptr;
 );
 
-VKINFO_DECLARE(VkPipelineShaderStageCreateInfo, SHADER_STAGES, 
+MLTSG_VKINFO_DECLARE(VkPipelineShaderStageCreateInfo, SHADER_STAGES, 
     this->pSpecializationInfo = nullptr;
     this->stage = VK_SHADER_STAGE_FRAGMENT_BIT;
     this->flags = 0;
@@ -421,7 +424,7 @@ VKINFO_DECLARE(VkPipelineShaderStageCreateInfo, SHADER_STAGES,
     this->pName = "main";
 );
 
-VKINFO_DECLARE(VkShaderModuleCreateInfo, SHADER_INFO, 
+MLTSG_VKINFO_DECLARE(VkShaderModuleCreateInfo, SHADER_INFO, 
     this->codeSize = 0;
     this->pCode = nullptr;
     this->flags = 0;
@@ -429,7 +432,7 @@ VKINFO_DECLARE(VkShaderModuleCreateInfo, SHADER_INFO,
     this->sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
 );
 
-VKINFO_DECLARE(VkPipelineLayoutCreateInfo, PIPELINE_LAYOUT,
+MLTSG_VKINFO_DECLARE(VkPipelineLayoutCreateInfo, PIPELINE_LAYOUT,
     this->setLayoutCount = 0;
     this->pSetLayouts = nullptr;
     this->flags = 0;
@@ -439,7 +442,7 @@ VKINFO_DECLARE(VkPipelineLayoutCreateInfo, PIPELINE_LAYOUT,
     this->sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 );
 
-VKINFO_DECLARE(VkDescriptorSetLayoutCreateInfo, DESCRIPTOR_SET_LAYOUT,
+MLTSG_VKINFO_DECLARE(VkDescriptorSetLayoutCreateInfo, DESCRIPTOR_SET_LAYOUT,
     this->sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
     this->pNext = nullptr;
     this->flags = 0;
@@ -447,7 +450,7 @@ VKINFO_DECLARE(VkDescriptorSetLayoutCreateInfo, DESCRIPTOR_SET_LAYOUT,
     this->pBindings = nullptr;
 );
 
-VKINFO_DECLARE(VkDescriptorPoolCreateInfo, DESCRIPTOR_POOL, 
+MLTSG_VKINFO_DECLARE(VkDescriptorPoolCreateInfo, DESCRIPTOR_POOL, 
     this->poolSizeCount = 0;
     this->pPoolSizes = nullptr;
     this->flags = 0;
@@ -456,7 +459,7 @@ VKINFO_DECLARE(VkDescriptorPoolCreateInfo, DESCRIPTOR_POOL,
     this->maxSets = 0;
 );
 
-VKINFO_DECLARE(VkDescriptorSetAllocateInfo, DESCRIPTOR_SET_ALLOCATOR, 
+MLTSG_VKINFO_DECLARE(VkDescriptorSetAllocateInfo, DESCRIPTOR_SET_ALLOCATOR, 
     this->descriptorPool = VK_NULL_HANDLE;
     this->descriptorSetCount = 0;
     this->pNext = nullptr;
@@ -464,7 +467,7 @@ VKINFO_DECLARE(VkDescriptorSetAllocateInfo, DESCRIPTOR_SET_ALLOCATOR,
     this->sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 );
 
-VKINFO_DECLARE(VkWriteDescriptorSet, WRITE_DESCCRIPTOR, 
+MLTSG_VKINFO_DECLARE(VkWriteDescriptorSet, WRITE_DESCCRIPTOR, 
     this->descriptorCount = 0;
     this->descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     this->pBufferInfo = nullptr;
@@ -477,13 +480,13 @@ VKINFO_DECLARE(VkWriteDescriptorSet, WRITE_DESCCRIPTOR,
     this->sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 );
 
-VKINFO_DECLARE(VkFenceCreateInfo, VKFENCE,
+MLTSG_VKINFO_DECLARE(VkFenceCreateInfo, VKFENCE,
     this->flags = 0;
     this->pNext = nullptr;
     this->sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 );
 
-VKINFO_DECLARE(VkRenderPassBeginInfo, RENDERPASS_BEGIN,
+MLTSG_VKINFO_DECLARE(VkRenderPassBeginInfo, RENDERPASS_BEGIN,
     this->renderPass = VK_NULL_HANDLE;
     this->renderArea = { { 0, 0 }, { 0, 0 } };
     this->clearValueCount = 0;
@@ -493,7 +496,7 @@ VKINFO_DECLARE(VkRenderPassBeginInfo, RENDERPASS_BEGIN,
     this->sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 );
 
-VKINFO_DECLARE(VkFramebufferCreateInfo, FRAMEBUFFER_INFO,
+MLTSG_VKINFO_DECLARE(VkFramebufferCreateInfo, FRAMEBUFFER_INFO,
     this->attachmentCount = 0;
     this->pAttachments = nullptr;
     this->flags = 0;
@@ -505,5 +508,8 @@ VKINFO_DECLARE(VkFramebufferCreateInfo, FRAMEBUFFER_INFO,
     this->sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 );
 
-#undef VKINFO_DECLARE
+#undef MLTSG_VKINFO_DECLARE
+
+}
+
 #endif

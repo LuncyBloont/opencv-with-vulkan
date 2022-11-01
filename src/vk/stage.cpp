@@ -18,34 +18,34 @@
 #include <vcruntime.h>
 #include <vcruntime_string.h>
 
-GPUBuffer* uniformSrcBuffer = nullptr;
+mltsg::GPUBuffer* mltsg::uniformSrcBuffer = nullptr;
 
-GPUBuffer* meshSrcBuffer = nullptr;
+mltsg::GPUBuffer* mltsg::meshSrcBuffer = nullptr;
 
-int32_t uiMouseX = -100, uiMouseY = -100;
-float uiMouseLBT = 0.0f, uiMouseRBT = 0.0f;
+int32_t mltsg::uiMouseX = -100, mltsg::uiMouseY = -100;
+float mltsg::uiMouseLBT = 0.0f, mltsg::uiMouseRBT = 0.0f;
 
-void enableUnifromTransfer()
+void mltsg::enableUnifromTransfer()
 {
-    uniformSrcBuffer = new GPUBuffer(4096 * 32, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
+    uniformSrcBuffer = new mltsg::GPUBuffer(4096 * 32, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
 }
 
-void disableUnifromTransfer()
+void mltsg::disableUnifromTransfer()
 {
     delete uniformSrcBuffer;
 }
 
-void enableMeshTransfer()
+void mltsg::enableMeshTransfer()
 {
-    meshSrcBuffer = new GPUBuffer(10000 * 4 * 4 * 8 * 3, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
+    meshSrcBuffer = new mltsg::GPUBuffer(10000 * 4 * 4 * 8 * 3, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
 }
 
-void disableMeshTransfer()
+void mltsg::disableMeshTransfer()
 {
     delete meshSrcBuffer;
 }
 
-Stage::Stage(uint32_t width, uint32_t height, StageProperties* assets, bool HDR) : width(width), height(height), assets(assets)
+mltsg::Stage::Stage(uint32_t width, uint32_t height, StageProperties* assets, bool HDR) : width(width), height(height), assets(assets)
 {
     static int idForTag;
 
@@ -54,7 +54,7 @@ Stage::Stage(uint32_t width, uint32_t height, StageProperties* assets, bool HDR)
 
     data = cv::Mat(height, width, HDR ? CV_32SC4 : CV_8UC4);
     
-    frame = new GPUMat(&data, WRITE_MAT, false, USE_RAW, HDR);
+    frame = new GPUMat(&data, MLTSG_WRITE_MAT, false, MLTSG_USE_RAW, HDR);
 
     createShader();
 
@@ -71,14 +71,14 @@ Stage::Stage(uint32_t width, uint32_t height, StageProperties* assets, bool HDR)
     createEtc();
 }
 
-Stage::~Stage()
+mltsg::Stage::~Stage()
 {
     cleanup();
 
     delete frame;
 }
 
-void Stage::render(uint32_t newAge)
+void mltsg::Stage::render(uint32_t newAge)
 {
     if (age >= newAge)
     {
@@ -126,7 +126,7 @@ void Stage::render(uint32_t newAge)
     vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, 
         pipelineLayout, 0, 1, &descriptorSet, 0, nullptr);
 
-    vkCmdDrawIndexed(cmd, U32(mesh.index.size()), 1, 0, 0, 0);
+    vkCmdDrawIndexed(cmd, MLTSG_U32(mesh.index.size()), 1, 0, 0, 0);
 
     vkCmdEndRenderPass(cmd);
 
@@ -137,10 +137,10 @@ void Stage::render(uint32_t newAge)
         VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
     });
     
-    LogDB("%s render complete at Age(\t%d\t)\n", tag.c_str(), newAge);
+    MLTSG_LogDB("%s render complete at Age(\t%d\t)\n", tag.c_str(), newAge);
 }
 
-void Stage::createFramebuffer()
+void mltsg::Stage::createFramebuffer()
 {
     FRAMEBUFFER_INFO frameInfo{};
     frameInfo.attachmentCount = 1;
@@ -150,12 +150,12 @@ void Stage::createFramebuffer()
     frameInfo.layers = 1;
     frameInfo.renderPass = renderPass;
 
-    trydo(VK_SUCCESS) = vkCreateFramebuffer(gVkDevice, &frameInfo, GVKALC, &frameBuffer);
+    trydo(VK_SUCCESS) = vkCreateFramebuffer(gVkDevice, &frameInfo, MLTSG_GVKALC, &frameBuffer);
 }
 
-void Stage::createEtc()
+void mltsg::Stage::createEtc()
 {
-    trydo(VK_SUCCESS) = vkCreateFence(gVkDevice, &the_VKFENCE, GVKALC, &fence);
+    trydo(VK_SUCCESS) = vkCreateFence(gVkDevice, &the_VKFENCE, MLTSG_GVKALC, &fence);
 
     vertexBuffer = new GPUBuffer(SCREEN_VERTEX_SIZE * 4, 
         VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_BUFFER_USAGE_TRANSFER_DST_BIT);
@@ -174,7 +174,7 @@ void Stage::createEtc()
 
 }
 
-int Stage::show(const char* windowName) const
+int mltsg::Stage::show(const char* windowName) const
 {
     struct Pack{
         const char* wname;
@@ -194,25 +194,25 @@ int Stage::show(const char* windowName) const
     return pack.keyCode;
 }
 
-void Stage::createShader()
+void mltsg::Stage::createShader()
 {
     readShader(vertexShader, assets->customVertexShader);
     readShader(fragmentShader, assets->shaderPath);
 }
 
-GPUMat* Stage::getGPUMat() { return frame; }
+mltsg::GPUMat* mltsg::Stage::getGPUMat() { return frame; }
 
-void Stage::createPipelineLayout()
+void mltsg::Stage::createPipelineLayout()
 {
     PIPELINE_LAYOUT layoutInfo{};
 
     layoutInfo.setLayoutCount = 1;
     layoutInfo.pSetLayouts = &descriptorSetLayout;
     
-    trydo(VK_SUCCESS) = vkCreatePipelineLayout(gVkDevice, &layoutInfo, GVKALC, &pipelineLayout);
+    trydo(VK_SUCCESS) = vkCreatePipelineLayout(gVkDevice, &layoutInfo, MLTSG_GVKALC, &pipelineLayout);
 }
 
-void Stage::buildUniform()
+void mltsg::Stage::buildUniform()
 {
     // create descriptor set layout
 
@@ -226,13 +226,13 @@ void Stage::buildUniform()
     bindings[0].pImmutableSamplers = nullptr;
     bindings[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
 
-    bindings[1].descriptorCount = REFERENCE_COUNT;
+    bindings[1].descriptorCount = MLTSG_REFERENCE_COUNT;
     bindings[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     bindings[1].binding = 1;
     bindings[1].pImmutableSamplers = nullptr;
     bindings[1].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
-    bindings[2].descriptorCount = TEXTURES_COUNT;
+    bindings[2].descriptorCount = MLTSG_TEXTURES_COUNT;
     bindings[2].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     bindings[2].binding = 2;
     bindings[2].pImmutableSamplers = nullptr;
@@ -242,7 +242,7 @@ void Stage::buildUniform()
     descriptorSetLayoutInfo.pBindings = bindings;
 
     trydo(VK_SUCCESS) = vkCreateDescriptorSetLayout(gVkDevice, &descriptorSetLayoutInfo, 
-        GVKALC, &descriptorSetLayout);
+        MLTSG_GVKALC, &descriptorSetLayout);
     
     // create descriptor pool
 
@@ -253,7 +253,7 @@ void Stage::buildUniform()
     poolSizes[0].descriptorCount = 1;
     poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 
-    poolSizes[1].descriptorCount = REFERENCE_COUNT + TEXTURES_COUNT;
+    poolSizes[1].descriptorCount = MLTSG_REFERENCE_COUNT + MLTSG_TEXTURES_COUNT;
     poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 
     descriptorPoolInfo.poolSizeCount = 2;
@@ -261,7 +261,7 @@ void Stage::buildUniform()
     descriptorPoolInfo.maxSets = 1;
     
     trydo(VK_SUCCESS) = vkCreateDescriptorPool(gVkDevice, 
-        &descriptorPoolInfo, GVKALC, &descriptorPool);
+        &descriptorPoolInfo, MLTSG_GVKALC, &descriptorPool);
 
     // allocate descriptor set
 
@@ -278,32 +278,32 @@ void Stage::buildUniform()
 }
 
 
-void Stage::updateUniform()
+void mltsg::Stage::updateUniform()
 {
     float time = clock() * 1.0f / CLOCKS_PER_SEC;
 
-    uniform.vector[8 + TEXTURES_COUNT + REFERENCE_COUNT] = {
+    uniform.vector[8 + MLTSG_TEXTURES_COUNT + MLTSG_REFERENCE_COUNT] = {
         time,
         0.5f * time,
         time * 1000.0f,
         float(age - 1)
     };
 
-    uniform.vector[8 + TEXTURES_COUNT + REFERENCE_COUNT + 1] = {
+    uniform.vector[8 + MLTSG_TEXTURES_COUNT + MLTSG_REFERENCE_COUNT + 1] = {
         width,
         height,
         age,
         age * 0.5f
     };
 
-    uniform.vector[8 + TEXTURES_COUNT + REFERENCE_COUNT + 2] = {
+    uniform.vector[8 + MLTSG_TEXTURES_COUNT + MLTSG_REFERENCE_COUNT + 2] = {
         uiMouseX,
         uiMouseY,
         uiMouseLBT,
         uiMouseRBT
     };
 
-    for (uint32_t i = 0; i < REFERENCE_COUNT; ++i)
+    for (uint32_t i = 0; i < MLTSG_REFERENCE_COUNT; ++i)
     {
         if (assets->reference[i])
         {
@@ -320,11 +320,11 @@ void Stage::updateUniform()
         }
     }
 
-    for (uint32_t i = 0; i < TEXTURES_COUNT; ++i)
+    for (uint32_t i = 0; i < MLTSG_TEXTURES_COUNT; ++i)
     {
         if (assets->textures[i])
         {
-            uniform.vector[8 + i + REFERENCE_COUNT] = {
+            uniform.vector[8 + i + MLTSG_REFERENCE_COUNT] = {
                 assets->textures[i]->width(),
                 assets->textures[i]->height(),
                 assets->textures[i]->levels,
@@ -346,7 +346,7 @@ void Stage::updateUniform()
     writeUniform();
 }
 
-void Stage::writeUniform()
+void mltsg::Stage::writeUniform()
 {
     // update uniform
 
@@ -375,14 +375,14 @@ void Stage::writeUniform()
     // update reference
 
     WRITE_DESCCRIPTOR writeReference{};
-    writeReference.descriptorCount = REFERENCE_COUNT;
+    writeReference.descriptorCount = MLTSG_REFERENCE_COUNT;
     writeReference.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     writeReference.dstBinding = 1;
     writeReference.dstArrayElement = 0;
     writeReference.dstSet = descriptorSet;
     
-    VkDescriptorImageInfo referenceInfos[REFERENCE_COUNT];
-    for (uint32_t i = 0; i < REFERENCE_COUNT; i++)
+    VkDescriptorImageInfo referenceInfos[MLTSG_REFERENCE_COUNT];
+    for (uint32_t i = 0; i < MLTSG_REFERENCE_COUNT; i++)
     {
         referenceInfos[i].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         referenceInfos[i].imageView = assets->reference[i] ? assets->reference[i]->frame->view : noneRefTexture->view;
@@ -396,14 +396,14 @@ void Stage::writeUniform()
     // update textures
 
     WRITE_DESCCRIPTOR writeTextures{};
-    writeTextures.descriptorCount = TEXTURES_COUNT;
+    writeTextures.descriptorCount = MLTSG_TEXTURES_COUNT;
     writeTextures.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     writeTextures.dstBinding = 2;
     writeTextures.dstArrayElement = 0;
     writeTextures.dstSet = descriptorSet;
 
-    VkDescriptorImageInfo texturesInfo[TEXTURES_COUNT];
-    for (uint32_t i = 0; i < TEXTURES_COUNT; i++)
+    VkDescriptorImageInfo texturesInfo[MLTSG_TEXTURES_COUNT];
+    for (uint32_t i = 0; i < MLTSG_TEXTURES_COUNT; i++)
     {
         texturesInfo[i].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         texturesInfo[i].imageView = assets->textures[i] ? assets->textures[i]->view : noneRefTexture->view;
@@ -415,7 +415,7 @@ void Stage::writeUniform()
     vkUpdateDescriptorSets(gVkDevice, 1, &writeTextures, 0, nullptr);
 }
 
-void Stage::buildRenderPass()
+void mltsg::Stage::buildRenderPass()
 {
     VkAttachmentDescription attachments[1];
     attachments[0].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -469,10 +469,10 @@ void Stage::buildRenderPass()
     renderPassInfo.dependencyCount = 2;
     renderPassInfo.pDependencies = subpassDependencies;
     
-    trydo(VK_SUCCESS) = vkCreateRenderPass(gVkDevice, &renderPassInfo, GVKALC, &renderPass);
+    trydo(VK_SUCCESS) = vkCreateRenderPass(gVkDevice, &renderPassInfo, MLTSG_GVKALC, &renderPass);
 }
 
-void Stage::buildPipeline()
+void mltsg::Stage::buildPipeline()
 {
     GRAPHICS_PIPELINE pipelineInfo{};
 
@@ -571,10 +571,10 @@ void Stage::buildPipeline()
     pipelineInfo.pStages = shaderStages;
 
     trydo(VK_SUCCESS) = vkCreateGraphicsPipelines(gVkDevice, VK_NULL_HANDLE, 
-        1, &pipelineInfo, GVKALC, &pipeline);
+        1, &pipelineInfo, MLTSG_GVKALC, &pipeline);
 }
 
-void Stage::cleanup()
+void mltsg::Stage::cleanup()
 {
     delete uniformBuffer;
     delete vertexBuffer;
@@ -585,13 +585,13 @@ void Stage::cleanup()
         It is invalid to call vkFreeDescriptorSets() with a pool created without setting VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT.
         https://vulkan.lunarg.com/doc/view/1.3.216.0/windows/1.3-extensions/vkspec.html#VUID-vkFreeDescriptorSets-descriptorPool-00312
     */
-    vkDestroyFence(gVkDevice, fence, GVKALC);
-    vkDestroyShaderModule(gVkDevice, vertexShader, GVKALC);    
-    vkDestroyShaderModule(gVkDevice, fragmentShader, GVKALC);    
-    vkDestroyPipeline(gVkDevice, pipeline, GVKALC);    
-    vkDestroyPipelineLayout(gVkDevice, pipelineLayout, GVKALC);
-    vkDestroyDescriptorSetLayout(gVkDevice, descriptorSetLayout, GVKALC);
-    vkDestroyDescriptorPool(gVkDevice, descriptorPool, GVKALC);
-    vkDestroyFramebuffer(gVkDevice, frameBuffer, GVKALC);
-    vkDestroyRenderPass(gVkDevice, renderPass, GVKALC);
+    vkDestroyFence(gVkDevice, fence, MLTSG_GVKALC);
+    vkDestroyShaderModule(gVkDevice, vertexShader, MLTSG_GVKALC);    
+    vkDestroyShaderModule(gVkDevice, fragmentShader, MLTSG_GVKALC);    
+    vkDestroyPipeline(gVkDevice, pipeline, MLTSG_GVKALC);    
+    vkDestroyPipelineLayout(gVkDevice, pipelineLayout, MLTSG_GVKALC);
+    vkDestroyDescriptorSetLayout(gVkDevice, descriptorSetLayout, MLTSG_GVKALC);
+    vkDestroyDescriptorPool(gVkDevice, descriptorPool, MLTSG_GVKALC);
+    vkDestroyFramebuffer(gVkDevice, frameBuffer, MLTSG_GVKALC);
+    vkDestroyRenderPass(gVkDevice, renderPass, MLTSG_GVKALC);
 }

@@ -13,3 +13,4 @@
 /libconfig/*
 __pycache__
 IGN_*
+.ipynb_checkpoints

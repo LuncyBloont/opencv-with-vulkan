@@ -13,12 +13,15 @@
 #include <glm/glm.hpp>
 #include <vector>
 
-#define READ_MAT true
-#define WRITE_MAT false
-#define USE_SRGB true
-#define USE_RAW false
+namespace mltsg 
+{
 
-#define HDR_MAX (255 * 2200000)
+#define MLTSG_READ_MAT true
+#define MLTSG_WRITE_MAT false
+#define MLTSG_USE_SRGB true
+#define MLTSG_USE_RAW false
+
+#define MLTSG_HDR_MAX (255 * 2200000)
 
 struct GSampler 
 {
@@ -54,7 +57,7 @@ struct GPUMat
 
     VkFormat format;
     
-    explicit GPUMat(cv::Mat* mat, bool readable = READ_MAT, bool genMip = true, bool srgb = USE_RAW, bool HDR = false);
+    explicit GPUMat(cv::Mat* mat, bool readable = MLTSG_READ_MAT, bool genMip = true, bool srgb = MLTSG_USE_RAW, bool HDR = false);
     virtual ~GPUMat();
 
     void apply();
@@ -100,7 +103,7 @@ void createMatC4(cv::Mat& dst, const cv::Mat& src)
             type = CV_32SC4;
             break;
         default:
-            LogErr("Unknown type\n");
+            mltsg::LogErr("Unknown type\n");
             throw std::runtime_error("unknown type");
     }
     dst.create(src.size(), type);
@@ -111,5 +114,7 @@ void createMatC4(cv::Mat& dst, const cv::Mat& src)
 
 void enableImageTransferBuffer();
 void disableImageTransferBuffer();
+
+}
 
 #endif

@@ -11,9 +11,12 @@
 #include <stdint.h>
 #include <string>
 
-#define U32 uint32_t
+namespace mltsg 
+{
 
-#define MAX_SHADER_SIZE (1024 * 1024 * 40)
+#define MLTSG_U32 uint32_t
+
+#define MLTSG_MAX_SHADER_SIZE (1024 * 1024 * 40)
 
 template<typename T>
 struct Try
@@ -31,7 +34,7 @@ struct Try
     { 
         if (t != tmp)
         {
-            LogErr("Try call vulkan function error...\n");
+            mltsg::LogErr("Try call vulkan function error...\n");
             throw std::runtime_error("try error");
         }
         return *this;
@@ -65,5 +68,7 @@ inline uint32_t toMipmapSize(uint32_t size, uint32_t level)
 }
 
 void readShader(VkShaderModule& shader, std::string fname);
+
+}
 
 #endif
