@@ -1,6 +1,6 @@
-/*.jpg~
-/*.png~
-/*.bmp~
+*.jpg~
+*.png~
+*.bmp~
 /.cache
 /.vscode
 /build*

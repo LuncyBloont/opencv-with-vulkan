@@ -194,6 +194,16 @@ int mltsg::Stage::show(const char* windowName) const
     return pack.keyCode;
 }
 
+void mltsg::Stage::applyAndShow(const char* windowName) const
+{
+    if (frame->showAge < age)
+    {
+        frame->apply();
+        cv::imshow(windowName, *frame->cpuData);
+        frame->showAge = age;
+    }
+}
+
 void mltsg::Stage::createShader()
 {
     readShader(vertexShader, assets->customVertexShader);

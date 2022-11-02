@@ -13,11 +13,11 @@ int main()
 {
     mltsg::initializeVulkan();
     {
-        cv::Mat input = cv::imread(MLTSG_PATH("/images/ii.jpg"));
+        cv::Mat input = cv::imread(MLTSG_PATH("/images/ii3.jpg"));
 
         cv::imshow("Input", input);
 
-        cv::Mat hist = mltsg::genHistMap<uint8_t, 255>(input);
+        cv::Mat hist = mltsg::genHistMap<uint8_t, 255>(input, false);
 
         cv::Mat histShow;
         histShow.create(hist.rows * 512, hist.cols, CV_8UC4);
@@ -75,9 +75,38 @@ int main()
 
         mltsg::Stage frame(rawTex.width(), rawTex.height(), &assets);
 
+        cv::namedWindow("Output");
+
         frame.render(1);
         frame.show("Output");
-        cv::waitKey();
+
+        struct Data 
+        {
+            mltsg::StageProperties* assets;
+            mltsg::Stage* frame;
+            int age;
+        } rdata { &assets, &frame, 2 };
+
+        int cs = 0;
+        cv::createTrackbar("Fac", "Output", &cs, input.cols * 8 / 10, 
+            [](int val , void* rdata){
+                Data& data = *reinterpret_cast<Data*>(rdata);
+                float fac(val / (1.0f * data.frame->getGPUMat()->width() * 8 / 10));
+                data.assets->uniVec[0] = { fac, 0.0f, 0.0f, 0.0f };
+
+            }, &rdata);
+
+        while (true) {
+            
+            frame.render(rdata.age);
+            rdata.age += 1;
+
+            if (frame.show("Output") == 'q')
+            {
+                break;
+            }
+
+        }
     }
     mltsg::cleanupVulkan();
 

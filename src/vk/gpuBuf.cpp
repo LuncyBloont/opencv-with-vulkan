@@ -53,7 +53,19 @@ mltsg::GPUBuffer::~GPUBuffer()
 
 void mltsg::GPUBuffer::mapMem()
 {
-    lock.lock();
+    MLTSG_LogDB("Memory (obj %llx) will map (%d)\n", this, lockStatus);
+    try 
+    {
+        lock.lock();
+    } 
+    catch (std::runtime_error err)
+    {
+        LogErr("mutex.lock(): %s\n", err.what());
+        exit(-1);
+    }
+    lockStatus += 1;
+    MLTSG_LogDB("Memory (obj %llx) maped (%d)\n", this, lockStatus);
+
     if (usage == VK_BUFFER_USAGE_TRANSFER_SRC_BIT)
     {
         vkMapMemory(gVkDevice, memory.area->vulkanMemory(), memory.ptr, memoryRequirements.size, 0, &data);
@@ -82,11 +94,14 @@ void mltsg::GPUBuffer::unmapMem()
     }
     else 
     {
-        lock.unlock();
         mltsg::LogErr("Device local memory buffer can't be unmaped.\n");
+        lock.unlock();
         throw std::runtime_error("unmap device local memory");
     }
+    MLTSG_LogDB("Memory (obj %llx) will unmap (%d)\n", this, lockStatus);
+    lockStatus -= 1;
     lock.unlock();
+    MLTSG_LogDB("Memory (obj %llx) unmaped (%d)\n", this, lockStatus);
 }
 
 
