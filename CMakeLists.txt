@@ -3,7 +3,7 @@ project(ImageProcessing VERSION 0.1.0)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-set(DEBUG "On")
+set(DEBUG "Off")
 
 set(LAB_PATH "./examples/lab7/1/main.cpp") # 选择实验代码目录
 

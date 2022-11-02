@@ -13,11 +13,13 @@ int main()
 {
     mltsg::initializeVulkan();
     {
-        cv::Mat input = cv::imread(MLTSG_PATH("/images/ii3.jpg"));
+        bool combineChannels = true;
+
+        cv::Mat input = cv::imread(MLTSG_PATH("/images/ii2.jpg"));
 
         cv::imshow("Input", input);
 
-        cv::Mat hist = mltsg::genHistMap<uint8_t, 255>(input, false);
+        cv::Mat hist = mltsg::genHistMap<uint8_t, 255>(input, combineChannels);
 
         cv::Mat histShow;
         histShow.create(hist.rows * 512, hist.cols, CV_8UC4);
@@ -26,6 +28,9 @@ int main()
         
         cv::Mat colorRampShow;
         colorRampShow.create(hist.rows * 512, hist.cols, CV_8UC4);
+
+        cv::Mat histEndShow;
+        histEndShow.create(hist.rows * 512, hist.cols, CV_8UC4);
 
         cv::Mat* uniTex0 = &hist;
 
@@ -69,7 +74,8 @@ int main()
         colorRampTex.apply();
 
         mltsg::StageProperties assets {
-            {}, { &rawTex, &colorRampTex }, {}, {},
+            {}, { &rawTex, &colorRampTex }, {}, 
+            { glm::vec4(1.0f) },
             MLTSG_PATH("/shaders/equalizeHist.spv")
         };
 
@@ -78,7 +84,12 @@ int main()
         cv::namedWindow("Output");
 
         frame.render(1);
-        frame.show("Output");
+        frame.applyAndShow("Output");
+
+        cv::Mat histEnd = mltsg::genHistMap<uint8_t, 255>(*frame.getGPUMat()->cpuData, combineChannels);
+        uniTex0 = &histEnd;
+        mltsg::multiProcess<MLTSG_U8, 32>(histEndShow, shader);
+        cv::imshow("Hist new", histEndShow);
 
         struct Data 
         {
@@ -88,10 +99,11 @@ int main()
         } rdata { &assets, &frame, 2 };
 
         int cs = 0;
-        cv::createTrackbar("Fac", "Output", &cs, input.cols * 8 / 10, 
+        assets.uniVec[0] = glm::vec4(0.0f);
+        cv::createTrackbar("Fac", "Output", &cs, input.cols * 6 / 10, 
             [](int val , void* rdata){
                 Data& data = *reinterpret_cast<Data*>(rdata);
-                float fac(val / (1.0f * data.frame->getGPUMat()->width() * 8 / 10));
+                float fac(val / (1.0f * data.frame->getGPUMat()->width() * 6 / 10));
                 data.assets->uniVec[0] = { fac, 0.0f, 0.0f, 0.0f };
 
             }, &rdata);

@@ -57,7 +57,7 @@ def filterName(path : str, filterList : list[str]):
     return False
 
 allDirs = refDirs[:]
-allDirs.append(os.path.join('./', l1dir, l2dir))
+allDirs.append(os.path.join('./examples', l1dir, l2dir))
 
 print('copy {} to {}'.format(allDirs, smtDir))
 
