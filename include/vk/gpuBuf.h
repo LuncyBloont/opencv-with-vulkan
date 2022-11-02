@@ -5,6 +5,9 @@
 #include "vulkan/vulkan_core.h"
 #include <mutex>
 
+namespace mltsg 
+{
+
 struct GPUBuffer
 {
     VkBuffer buffer;
@@ -26,5 +29,7 @@ struct GPUBuffer
     GPUBuffer& operator=(const GPUBuffer& other) = delete;
     GPUBuffer& operator=(const GPUBuffer&& other) = delete;
 };
+
+}
 
 #endif

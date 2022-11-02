@@ -8,11 +8,11 @@
 #include <vcruntime_string.h>
 #include <vector>
 
-void readShader(VkShaderModule& shader, std::string fname)
+void mltsg::readShader(VkShaderModule& shader, std::string fname)
 {
     std::vector<char> codes;
 
-    SHADER_INFO info{};
+    mltsg::SHADER_INFO info{};
 
     std::ifstream file(fname, std::ios::in | std::ios::binary);
     if (!file.is_open())
@@ -33,7 +33,7 @@ void readShader(VkShaderModule& shader, std::string fname)
     info.codeSize = codes.size();
     info.pCode = reinterpret_cast<uint32_t*>(codes.data());
 
-    Log("Load shader %s (size: %llu)\n", CSTR(fname), info.codeSize);
+    mltsg::Log("Load shader %s (size: %llu)\n", mltsg::CSTR(fname), info.codeSize);
     
-    trydo(VK_SUCCESS) = vkCreateShaderModule(gVkDevice, &info, GVKALC, &shader);
+    mltsg::trydo(VK_SUCCESS) = vkCreateShaderModule(mltsg::gVkDevice, &info, MLTSG_GVKALC, &shader);
 }

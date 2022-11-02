@@ -10,11 +10,14 @@
 #include <vulkan/vulkan.h>
 #include "vkHelper.h"
 
-#define DEFAULT_T_MEM_SIZE (32 * 1024 * 1024 * 8 * 2)
-#define DEFAULT_V_MEM_SIZE (10000 * 4 * 4 * 16 * 8 * 32)
-#define DEFAULT_U_MEM_SIZE (16 * 128 * 256)
-#define DEFAULT_TRANS_SIZE (8 * 4096 * 4096 * 4)
-#define DEFAULT_I_MEM_SIZE (16 * 8 * 100000)
+namespace mltsg 
+{
+
+#define MLTSG_DEFAULT_T_MEM_SIZE (32 * 1024 * 1024 * 8 * 2)
+#define MLTSG_DEFAULT_V_MEM_SIZE (10000 * 4 * 4 * 16 * 8 * 32)
+#define MLTSG_DEFAULT_U_MEM_SIZE (16 * 128 * 256)
+#define MLTSG_DEFAULT_TRANS_SIZE (8 * 4096 * 4096 * 4)
+#define MLTSG_DEFAULT_I_MEM_SIZE (16 * 8 * 100000)
 
 class GPUMem
 {
@@ -75,7 +78,7 @@ struct GPUMemsArray
         for (uint32_t i = 0; i < count; ++i) {
             if (arr[i] == nullptr)
             {
-                LogDB("%s GPUMemArray create area %d\n", name, i);
+                MLTSG_LogDB("%s GPUMemArray create area %d\n", name, i);
                 arr[i] = new GPUMem(iniSize, requirements, properties);
             }
             if (arr[i]->isCompatible(requirements, properties))
@@ -85,7 +88,7 @@ struct GPUMemsArray
             }
         }
 
-        LogErr("CPU Memory Array allocate error: no available GPUMem.\n");
+        mltsg::LogErr("CPU Memory Array allocate error: no available GPUMem.\n");
         throw std::runtime_error("GPUMemArray alloc");
     }
 
@@ -102,5 +105,7 @@ struct GPUMemsArray
 };
 
 uint32_t findMemoryIndex(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+
+}
 
 #endif

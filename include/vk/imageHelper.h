@@ -6,6 +6,9 @@
 #include "vulkan/vulkan_core.h"
 #include <cassert>
 
+namespace mltsg 
+{
+
 extern GPUBuffer* imageTransferBuffer;
 extern GPUBuffer* imageReadFromGPUBuffer;
 
@@ -18,5 +21,7 @@ void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t 
 void copyImageToBuffer(VkImage image, uint32_t width, uint32_t height, uint32_t mipLevel, VkBuffer buffer);
 
 void copyBufferToBuffer(VkBuffer src, VkBuffer dst, VkDeviceSize size);
+
+}
 
 #endif

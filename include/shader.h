@@ -12,6 +12,9 @@
 #include <thread>
 #include <vector>
 
+namespace mltsg 
+{
+
 enum class SampleUV
 {
     Clamp,
@@ -156,6 +159,8 @@ void process(cv::Mat& img, const Shader& shader)
             }
         }
     }
+}
+
 }
 
 #include "glslStyle.hpp"

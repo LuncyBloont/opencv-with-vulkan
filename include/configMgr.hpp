@@ -12,7 +12,9 @@
 #include <string>
 #include <map>
 
-#define CFG(s) std::string(s)
+namespace mltsg {
+
+#define MLTSG_CFG(s) std::string(s)
 
 enum class ConfigType
 {
@@ -136,7 +138,7 @@ inline void readConfig(std::vector<ConfigItem>& config, const std::string& fname
     std::ifstream ifs(fname, std::ios::in);
     if (!ifs.is_open())
     {
-        LogErr("failed to open file (%s)\n", CSTR(fname));
+        mltsg::LogErr("failed to open file (%s)\n", CSTR(fname));
         throw std::runtime_error("open");
     }
     while (!ifs.eof())
@@ -199,20 +201,22 @@ inline void readConfig(std::map<std::string, ConfigItem>& config, const std::str
 
 inline void print(const std::string& title, const std::map<std::string, ConfigItem>& config)
 {
-    Log("%s:\n", CSTR(title));
+    mltsg::Log("%s:\n", CSTR(title));
     for (const auto& item : config)
     {
-        Log("%s\n", CSTR(item.second));
+        mltsg::Log("%s\n", CSTR(item.second));
     }
 }
 
 inline void print(const std::string& title, const std::vector<ConfigItem>& config)
 {
-    Log("%s:\n", CSTR(title));
+    mltsg::Log("%s:\n", CSTR(title));
     for (const auto& item : config)
     {
-        Log("    %s\n", CSTR(item));
+        mltsg::Log("    %s\n", CSTR(item));
     }
+}
+
 }
 
 #endif

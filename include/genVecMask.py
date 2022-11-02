@@ -23,6 +23,8 @@ def toVecN(n):
         return 'float'
     return 'glm::vec{}'.format(n)
 
+app('namespace mltsg\n{\n')
+
 app('\n\n'.join([ (
         '\n'.join([ (
             '\n'.join([ (
@@ -36,6 +38,7 @@ app('\n\n'.join([ (
         ) for j in range(1, i + 1) ])
     ) for i in range(2, 5) ]))
 
+app('\n}\n')
 app("#endif")
 
 with open('./include/glslStyle.hpp', 'w') as f:

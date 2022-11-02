@@ -15,7 +15,7 @@
 #include <vcruntime_string.h>
 #include <vector>
 
-GSampler* defaultLinearSampler = nullptr;
+mltsg::GSampler* mltsg::defaultLinearSampler = nullptr;
 
 void generateMipmaps(const cv::Mat& level0, std::vector<cv::Mat>& mipmaps, uint32_t levels, bool HDR)
 {
@@ -24,8 +24,8 @@ void generateMipmaps(const cv::Mat& level0, std::vector<cv::Mat>& mipmaps, uint3
     for (uint32_t i = 1; i < levels; ++i)
     {
         mipmaps[i - 1].create(
-            toMipmapSize(level0.rows, i), 
-            toMipmapSize(level0.cols, i), 
+            mltsg::toMipmapSize(level0.rows, i), 
+            mltsg::toMipmapSize(level0.cols, i), 
             level0.type());
         const cv::Mat& ref = i == 1 ? level0 : mipmaps[i - 2];
         glm::vec3 offset = glm::vec3(1.0f / ref.cols, 1.0f / ref.rows, 0.0f);
@@ -34,30 +34,30 @@ void generateMipmaps(const cv::Mat& level0, std::vector<cv::Mat>& mipmaps, uint3
         {
             auto shader = [&](glm::vec2 uv) {
                 return (
-                    texelFetch<float, HDR_MAX>(ref, uv + _zz(offset)) +
-                    texelFetch<float, HDR_MAX>(ref, uv + _xz(offset)) + 
-                    texelFetch<float, HDR_MAX>(ref, uv + _zy(offset)) + 
-                    texelFetch<float, HDR_MAX>(ref, uv + _xy(offset))
+                    mltsg::texelFetch<float, MLTSG_HDR_MAX>(ref, uv + mltsg::_zz(offset)) +
+                    mltsg::texelFetch<float, MLTSG_HDR_MAX>(ref, uv + mltsg::_xz(offset)) + 
+                    mltsg::texelFetch<float, MLTSG_HDR_MAX>(ref, uv + mltsg::_zy(offset)) + 
+                    mltsg::texelFetch<float, MLTSG_HDR_MAX>(ref, uv + mltsg::_xy(offset))
                 ) * 0.25f;
             };
-            process<float, HDR_MAX>(mipmaps[i - 1], shader);
+            mltsg::process<float, MLTSG_HDR_MAX>(mipmaps[i - 1], shader);
         }
         else  
         {
             auto shader = [&](glm::vec2 uv) {
                 return (
-                    texelFetch<U8>(ref, uv + _zz(offset)) +
-                    texelFetch<U8>(ref, uv + _xz(offset)) + 
-                    texelFetch<U8>(ref, uv + _zy(offset)) + 
-                    texelFetch<U8>(ref, uv + _xy(offset))
+                    mltsg::texelFetch<MLTSG_U8>(ref, uv + mltsg::_zz(offset)) +
+                    mltsg::texelFetch<MLTSG_U8>(ref, uv + mltsg::_xz(offset)) + 
+                    mltsg::texelFetch<MLTSG_U8>(ref, uv + mltsg::_zy(offset)) + 
+                    mltsg::texelFetch<MLTSG_U8>(ref, uv + mltsg::_xy(offset))
                 ) * 0.25f;
             };
-            process<U8>(mipmaps[i - 1], shader);
+            mltsg::process<MLTSG_U8>(mipmaps[i - 1], shader);
         }
     }
 }
 
-GPUMat::GPUMat(cv::Mat* mat, bool readable, bool genMip , bool srgb, bool HDR) : 
+mltsg::GPUMat::GPUMat(cv::Mat* mat, bool readable, bool genMip , bool srgb, bool HDR) : 
     cpuData(mat), readable(readable), srgb(srgb), HDR(HDR)
 {
     assertVkEnv;
@@ -106,7 +106,7 @@ GPUMat::GPUMat(cv::Mat* mat, bool readable, bool genMip , bool srgb, bool HDR) :
         }
     }
 
-    if (readable == READ_MAT)
+    if (readable == MLTSG_READ_MAT)
     {
         imgInfo.usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
     }
@@ -117,13 +117,13 @@ GPUMat::GPUMat(cv::Mat* mat, bool readable, bool genMip , bool srgb, bool HDR) :
 
     format = imgInfo.format;
 
-    trydo(VK_SUCCESS) = vkCreateImage(gVkDevice, &imgInfo, GVKALC, &image);
+    trydo(VK_SUCCESS) = vkCreateImage(gVkDevice, &imgInfo, MLTSG_GVKALC, &image);
 
     // allocate memory
 
     vkGetImageMemoryRequirements(gVkDevice, image, &memoryRequirements);
 
-    memory = gImgMemory.memoryAllocate(memoryRequirements, memoryRequirements.size, DEFAULT_T_MEM_SIZE, 
+    memory = gImgMemory.memoryAllocate(memoryRequirements, memoryRequirements.size, MLTSG_DEFAULT_T_MEM_SIZE, 
         VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
     vkBindImageMemory(gVkDevice, image, memory.area->vulkanMemory(), memory.ptr);
@@ -135,27 +135,27 @@ GPUMat::GPUMat(cv::Mat* mat, bool readable, bool genMip , bool srgb, bool HDR) :
     viewInfo.format = imgInfo.format;
     viewInfo.subresourceRange.levelCount = levels;
 
-    trydo(VK_SUCCESS) = vkCreateImageView(gVkDevice, &viewInfo, GVKALC, &view);
+    trydo(VK_SUCCESS) = vkCreateImageView(gVkDevice, &viewInfo, MLTSG_GVKALC, &view);
 
-    if (readable == WRITE_MAT)
+    if (readable == MLTSG_WRITE_MAT)
     {
         transitionImageLayout(image, format, 0, { VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL });
     }
 }
 
-GPUMat::~GPUMat()
+mltsg::GPUMat::~GPUMat()
 {
-    vkDestroyImageView(gVkDevice, view, GVKALC);
-    vkDestroyImage(gVkDevice, image, GVKALC);
+    vkDestroyImageView(gVkDevice, view, MLTSG_GVKALC);
+    vkDestroyImage(gVkDevice, image, MLTSG_GVKALC);
 }
 
 typedef std::pair<VkImageLayout, VkImageLayout> ImageLayoutTransition;
 
 void transitionImageLayout(VkImage image, VkFormat format, ImageLayoutTransition transition)
 {
-    VkCommandBuffer cmd = beginCommandOnce();
+    VkCommandBuffer cmd = mltsg::beginCommandOnce();
 
-    IMAGE_BARRIER barrier{};
+    mltsg::IMAGE_BARRIER barrier{};
     barrier.image = image;
     barrier.oldLayout = transition.first;
     barrier.newLayout = transition.second;
@@ -193,43 +193,43 @@ void transitionImageLayout(VkImage image, VkFormat format, ImageLayoutTransition
     }
     else
     {
-        LogErr("Unsupported layout transition!\n");
+        mltsg::LogErr("Unsupported layout transition!\n");
         throw std::runtime_error("layout transition");
     }
 
     vkCmdPipelineBarrier(cmd, sourceStage, destinationStage, 
         0, 0, nullptr, 0, nullptr, 1, &barrier);
 
-    endCommandOnce(cmd);
+    mltsg::endCommandOnce(cmd);
 }
 
-uint32_t GPUMat::width() const { return uint32_t(cpuData->cols); }
-uint32_t GPUMat::height() const { return uint32_t(cpuData->rows); }
+uint32_t mltsg::GPUMat::width() const { return uint32_t(cpuData->cols); }
+uint32_t mltsg::GPUMat::height() const { return uint32_t(cpuData->rows); }
 
-void GPUMat::makeValid()
+void mltsg::GPUMat::makeValid()
 {
     if (cpuData->channels() == 3)
     {
         cv::Mat tmp;
         if (!HDR)
         {
-            createMatC4<U8>(tmp, *cpuData);
+            createMatC4<MLTSG_U8>(tmp, *cpuData);
         }
         else
         {
-            createMatC4<float, HDR_MAX>(tmp, *cpuData);
+            createMatC4<float, MLTSG_HDR_MAX>(tmp, *cpuData);
         }
         *cpuData = tmp;
     }
 }
 
-void GPUMat::apply()
+void mltsg::GPUMat::apply()
 {
     makeValid();
 
     generateMipmaps(*cpuData, mipmaps, levels, HDR);
 
-    if (readable == READ_MAT)
+    if (readable == MLTSG_READ_MAT)
     {
         transitionImageLayout(image, format, 0, { VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL });
 
@@ -269,10 +269,10 @@ void GPUMat::apply()
     }
 }
 
-void GPUMat::peek(void (*func)(GPUMat* self, void* userData), void* data)
+void mltsg::GPUMat::peek(void (*func)(GPUMat* self, void* userData), void* data)
 {
     makeValid();
-    if (readable == WRITE_MAT)
+    if (readable == MLTSG_WRITE_MAT)
     {
         transitionImageLayout(image, format, 0, { VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL });
 
@@ -291,19 +291,19 @@ void GPUMat::peek(void (*func)(GPUMat* self, void* userData), void* data)
     }
 }
 
-void enableImageTransferBuffer()
+void mltsg::enableImageTransferBuffer()
 {
-    imageTransferBuffer = new GPUBuffer(4096 * 4256 * 4, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
-    imageReadFromGPUBuffer = new GPUBuffer(4096 * 4256 * 4, VK_BUFFER_USAGE_TRANSFER_DST_BIT);
+    mltsg::imageTransferBuffer = new mltsg::GPUBuffer(4096 * 4256 * 4, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
+    mltsg::imageReadFromGPUBuffer = new mltsg::GPUBuffer(4096 * 4256 * 4, VK_BUFFER_USAGE_TRANSFER_DST_BIT);
 }
 
-void disableImageTransferBuffer()
+void mltsg::disableImageTransferBuffer()
 {
-    delete imageTransferBuffer;
-    delete imageReadFromGPUBuffer;
+    delete mltsg::imageTransferBuffer;
+    delete mltsg::imageReadFromGPUBuffer;
 }
 
-GSampler::GSampler(SampleUV uvType, SamplePoint filterType) : uvType(uvType), filterType(filterType)
+mltsg::GSampler::GSampler(SampleUV uvType, SamplePoint filterType) : uvType(uvType), filterType(filterType)
 {
     EMPTY_SAMPLER samplerInfo{};
 
@@ -340,10 +340,10 @@ GSampler::GSampler(SampleUV uvType, SamplePoint filterType) : uvType(uvType), fi
         samplerInfo.maxAnisotropy = gVkPhysicalDeviceProperties.limits.maxSamplerAnisotropy;
     }
 
-    trydo(VK_SUCCESS) = vkCreateSampler(gVkDevice, &samplerInfo, GVKALC, &sampler);
+    trydo(VK_SUCCESS) = vkCreateSampler(gVkDevice, &samplerInfo, MLTSG_GVKALC, &sampler);
 }
 
-GSampler::~GSampler()
+mltsg::GSampler::~GSampler()
 {
-    vkDestroySampler(gVkDevice, sampler, GVKALC);
+    vkDestroySampler(gVkDevice, sampler, MLTSG_GVKALC);
 }

@@ -11,33 +11,33 @@
 
 std::clock_t markedTime = 0;
 
-void markTime()
+void mltsg::markTime()
 {
     markedTime = clock();
 }
 
-float endMark(const char* msg)
+float mltsg::endMark(const char* msg)
 {
     clock_t t = clock();
     float dur = (t - markedTime) * 1.0f / CLOCKS_PER_SEC;
     
     if (msg[0] != 0)
     {
-        Log(msg, dur);
+        mltsg::Log(msg, dur);
     
     }
     markedTime = clock();
     return dur;
 }
 
-float areaOfTriangle(glm::vec2 A, glm::vec2 B, glm::vec2 C)
+float mltsg::areaOfTriangle(glm::vec2 A, glm::vec2 B, glm::vec2 C)
 {
     glm::vec2 P = B - A;
     glm::vec2 E = C - A;
     return 0.5f * glm::abs(-P.y * E.x + P.x * E.y);
 }
 
-float disToLine(glm::vec2 p, glm::vec2 A, glm::vec2 B)
+float mltsg::disToLine(glm::vec2 p, glm::vec2 A, glm::vec2 B)
 {
     float dis = 1e9f;
     glm::vec2 nvec = p - A;
@@ -63,17 +63,17 @@ float disToLine(glm::vec2 p, glm::vec2 A, glm::vec2 B)
     return dis;
 }
 
-#define Log _Log_Type_
+#define MLTSG_Log _MLTSG_Log_Type_
 
-Log::Log(LogType type, FILE* file) : type(type), file(file)
+mltsg::MLTSG_Log::MLTSG_Log(MLTSG_LogType type, FILE* file) : type(type), file(file)
 {}
 
-Log::Log(const Profile& customProfile, FILE* file) : file(file), custom(customProfile)
+mltsg::MLTSG_Log::MLTSG_Log(const Profile& customProfile, FILE* file) : file(file), custom(customProfile)
 {
-    type = LogType::Custom;
+    type = MLTSG_LogType::Custom;
 }
 
-void Log::setColor() const
+void mltsg::MLTSG_Log::setColor() const
 {
     const char* prefix = "unknown";
     const char* reset = "\033[0m";
@@ -81,25 +81,25 @@ void Log::setColor() const
     const char* signStyle = "\033[35m";
     const char* textStyle = "\033[35;1m";
     switch (type) {
-        case LogType::Error:
+        case MLTSG_LogType::Error:
             prefix = "error";
             prefixStyle = "\033[41;1m";
             signStyle = "\033[31m";
             textStyle = "\033[31;1m";
             break;
-        case LogType::Info:
+        case MLTSG_LogType::Info:
             prefix = "info";
             prefixStyle = "\033[40;1m";
             signStyle = "\033[30m";
             textStyle = "\033[30;1m";
             break;
-        case LogType::Waring:
+        case MLTSG_LogType::Waring:
             prefix = "waring";
             prefixStyle = "\033[43;1m";
             signStyle = "\033[33m";
             textStyle = "\033[33;1m";
             break;
-        case LogType::Custom:
+        case MLTSG_LogType::Custom:
             prefix = custom.prefix;
             prefixStyle = custom.prefixStyle;
             signStyle = custom.signStyle;
@@ -117,7 +117,7 @@ void Log::setColor() const
     }
 }
 
-void Log::unsetColor() const
+void mltsg::MLTSG_Log::unsetColor() const
 {
     if (file == stdout)
     {
@@ -129,19 +129,19 @@ void Log::unsetColor() const
     }
 }
 
-#undef Log
+#undef MLTSG_Log
 
-const _Log_Type_ Log(_Log_Type_::LogType::Info, stdout);
-const _Log_Type_ LogErr(_Log_Type_::LogType::Error, stdout);
-const _Log_Type_ LogWarn(_Log_Type_::LogType::Waring, stdout);
-const _Log_Type_ __LogDB(_Log_Type_::Profile{ 
+const mltsg::_MLTSG_Log_Type_ mltsg::Log(mltsg::_MLTSG_Log_Type_::MLTSG_LogType::Info, stdout);
+const mltsg::_MLTSG_Log_Type_ mltsg::LogErr(mltsg::_MLTSG_Log_Type_::MLTSG_LogType::Error, stdout);
+const mltsg::_MLTSG_Log_Type_ mltsg::LogWarn(mltsg::_MLTSG_Log_Type_::MLTSG_LogType::Waring, stdout);
+const mltsg::_MLTSG_Log_Type_ mltsg::_MLTSG_LogDB(mltsg::_MLTSG_Log_Type_::Profile{ 
     "debug",
     "\033[44;1m", 
     "\033[34m",
     "\033[30m"
 }, stdout);
 
-cv::Mat imreadRGB(const char* path, int flags)
+cv::Mat mltsg::imreadRGB(const char* path, int flags)
 {
     cv::Mat buf = cv::imread(path, flags);
     cv::Mat res;

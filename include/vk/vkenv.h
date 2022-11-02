@@ -7,12 +7,15 @@
 #include <vulkan/vulkan.h>
 #include <utility>
 
-#define EXTENSIONS_CONFIG "./vulkanExtensions.ini"
-#define LAYERS_CONFIG "./vulkanLayers.ini"
-#define DEVICES_CONFIG "./deviceConfig.ini"
+namespace mltsg 
+{
 
-#define REFERENCE_COUNT 3
-#define TEXTURES_COUNT 3
+#define MLTSG_EXTENSIONS_CONFIG "./vulkanExtensions.ini"
+#define MLTSG_LAYERS_CONFIG "./vulkanLayers.ini"
+#define MLTSG_DEVICES_CONFIG "./deviceConfig.ini"
+
+#define MLTSG_REFERENCE_COUNT 3
+#define MLTSG_TEXTURES_COUNT 3
 
 extern VkInstance gVkInstance;
 
@@ -52,5 +55,7 @@ void cleanupVulkan();
 
 VkCommandBuffer beginCommandOnce();
 void endCommandOnce(VkCommandBuffer cmdBuf, VkFence fence = VK_NULL_HANDLE);
+
+}
 
 #endif
