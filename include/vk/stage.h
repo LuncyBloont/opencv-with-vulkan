@@ -120,6 +120,7 @@ public:
     int show(const char* windowName) const;
 
     GPUMat* getGPUMat();
+    const GPUMat* getGPUMat() const;
 
 private:
     void createShader();

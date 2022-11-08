@@ -201,6 +201,7 @@ void mltsg::Stage::createShader()
 }
 
 mltsg::GPUMat* mltsg::Stage::getGPUMat() { return frame; }
+const mltsg::GPUMat* mltsg::Stage::getGPUMat() const { return frame; }
 
 void mltsg::Stage::createPipelineLayout()
 {

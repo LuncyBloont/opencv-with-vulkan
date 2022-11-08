@@ -3,7 +3,7 @@ project(ImageProcessing VERSION 0.1.0)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-set(LAB_PATH "./examples/lab7/1/main.cpp") # 选择实验代码目录
+set(LAB_PATH "./examples/lab7/2/main.cpp") # 选择实验代码目录
 
 include(CTest)
 enable_testing()
