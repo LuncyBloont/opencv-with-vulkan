@@ -106,7 +106,7 @@ cv::Mat imreadRGB(const char* path, int flags = cv::IMREAD_COLOR);
 #define MLTSG_PATH(s) ("../" s)
 
 template <typename Int, int32_t Limit>
-cv::Mat genHistMap(const cv::Mat& input)
+cv::Mat genHistMap(const cv::Mat& input, bool combineChannels)
 {
     cv::Mat res;
     res.create(1, Limit, CV_32SC(input.channels()));
@@ -120,9 +120,26 @@ cv::Mat genHistMap(const cv::Mat& input)
         for (int c = 0; c < input.cols; ++c)
         {
             const Int* vals = line + c * input.channels();
-            for (int i = 0; i < input.channels(); ++i)
+            if (combineChannels)
             {
-                ptr[vals[i] * input.channels() + i] += 1.0f / float(input.cols * input.rows);
+                int br = 0;
+                for (int i = 0; i < input.channels(); ++i)
+                {
+                    br += int(vals[i]);
+                }
+                br /= input.channels();
+
+                for (int i = 0; i < input.channels(); ++i)
+                {
+                    ptr[br * input.channels() + i] += 1.0f / float(input.cols * input.rows);
+                }
+            }
+            else 
+            {
+                for (int i = 0; i < input.channels(); ++i)
+                {
+                    ptr[int(vals[i] * input.channels() + i)] += 1.0f / float(input.cols * input.rows);
+                }
             }
         }
     }

@@ -31,14 +31,14 @@ struct StageProperties
 
     std::array<glm::mat4x4, 8> uniMat;   
     std::array<glm::vec4, 8> uniVec; // custom vec4 x 8
-/* 
-system vec4 x (MLTSG_REFERENCE_COUNT + MLTSG_TEXTURES_COUNT + 1):
-0 to MLTSG_REFERENCE_COUNT - 1: reference[0 to MLTSG_REFERENCE_COUNT] info { width, height, mipmapLevel, 0.0 }    
-MLTSG_REFERENCE_COUNT to MLTSG_REFERENCE_COUNT + MLTSG_TEXTURES_COUNT - 1: textures[0 to MLTSG_TEXTURES_COUNT] info { width, height, mipmapLevel, 0.0 }   
-MLTSG_REFERENCE_COUNT + MLTSG_TEXTURES_COUNT: time { s, 1/2s, ms, freme count }
-MLTSG_REFERENCE_COUNT + MLTSG_TEXTURES_COUNT + 1: { frame width, frame height, age, 1/2age } 
-MLTSG_REFERENCE_COUNT + MLTSG_TEXTURES_COUNT + 2: { mouseX, mouseY, mouseLBT, mouseRBT }
-*/
+    /* 
+        system vec4 x (MLTSG_REFERENCE_COUNT + MLTSG_TEXTURES_COUNT + 1):
+        0 to MLTSG_REFERENCE_COUNT - 1: reference[0 to MLTSG_REFERENCE_COUNT] info { width, height, mipmapLevel, 0.0 }    
+        MLTSG_REFERENCE_COUNT to MLTSG_REFERENCE_COUNT + MLTSG_TEXTURES_COUNT - 1: textures[0 to MLTSG_TEXTURES_COUNT] info { width, height, mipmapLevel, 0.0 }   
+        MLTSG_REFERENCE_COUNT + MLTSG_TEXTURES_COUNT: time { s, 1/2s, ms, freme count }
+        MLTSG_REFERENCE_COUNT + MLTSG_TEXTURES_COUNT + 1: { frame width, frame height, age, 1/2age } 
+        MLTSG_REFERENCE_COUNT + MLTSG_TEXTURES_COUNT + 2: { mouseX, mouseY, mouseLBT, mouseRBT }
+    */
 
     const std::string shaderPath;
     
@@ -117,7 +117,16 @@ public:
     Stage& operator=(const Stage&& o) = delete;
 
     void render(uint32_t newAge);
+
+    /**
+        @brief call for custom while loop. don't call it in any opencv callback (like: mouseCallback)
+    */
     int show(const char* windowName) const;
+
+    /**
+        @brief call for opencv callback.
+    */
+    void applyAndShow(const char* windowName) const;
 
     GPUMat* getGPUMat();
     const GPUMat* getGPUMat() const;

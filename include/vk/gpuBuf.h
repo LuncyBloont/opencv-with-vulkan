@@ -16,6 +16,8 @@ struct GPUBuffer
     VkBufferUsageFlags usage;
     std::mutex lock;
 
+    int lockStatus = 0;
+
     void* data;
 
     explicit GPUBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkBufferUsageFlags transferUsage = 0);
