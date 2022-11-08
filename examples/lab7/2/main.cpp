@@ -1,5 +1,7 @@
 #include "glm/common.hpp"
+#include "gpuMat.h"
 #include "helper.h"
+#include "opencv2/core/mat.hpp"
 #include "opencv2/highgui.hpp"
 #include "stage.h"
 #include "vkenv.h"
@@ -9,9 +11,12 @@ int main()
     mltsg::initializeVulkan();
 
     {
+        cv::Mat heartTex = mltsg::imreadRGB(MLTSG_PATH("/images/Heart.png"));
+        mltsg::GPUMat tex0(&heartTex);
+        tex0.apply();
 
         mltsg::StageProperties assets = {
-            {}, {}, {}, {}, 
+            {}, { &tex0 }, {}, {}, 
             MLTSG_PATH("/shaders/sweetHeart/sweetHear.spv")
         };
 

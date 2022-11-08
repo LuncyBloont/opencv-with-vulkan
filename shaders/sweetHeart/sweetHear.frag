@@ -13,43 +13,60 @@
 
 #include "kit.frag.glsl"
 
-float fractalHeart(vec3 pos, float h)
+float fractalHeart(vec3 pos, float h, float uvs)
 {
     float d = sdfCone2(pos, h);
-    float sub = 0.1;
+    float sub = 0.3;
 
+    if (abs(d) > sub * 2.0)
+    {
+        return abs(d) - sub;
+    }
+    
     vec2 uv = vec2(
         atan(pos.z, pos.x),
-        atan(pos.y, length(pos.xz))
-    );
+        -atan(pos.y, length(pos.xz)) + _time.x * 0.5 + cos(_time.x * 6.0 + 3.1416 * 0.5) * 0.35
+    ) * uvs;
 
-    vec2 cuv = (floor(uv * 5.0) + vec2(0.5)) / 5.0;
+    vec2 suv = fract(uv / 3.1415926 * 0.5) * _tex0Info.xy;
 
-    vec3 ctr = vec3(cos(cuv.y) * cos(cuv.x), sin(cuv.y), cos(cuv.y) * sin(cuv.x));
-    ctr += ctr * -sdfCone2(ctr, h);
+    float dp = texelFetch(_tex0, ivec2(suv), 0).r * (cos(uv.y + _time.x * 12.0) * 0.2 + 0.8);
 
-    return abs(d) < sub * 2.0 ? smin(d, sdfShpere(transform(pos - ctr, vec3(0.0), vec3(0.0), sub)) * sub, 4.0) : d;
+    return abs(d) - dp * 0.15;
 }
 
 #define DECLARE_SCENE(fname, type, dInit, packFname) \
 type fname(vec3 pos) \
 { \
     type s = dInit; \
-    vec3 posForHeart = transform(pos, vec3(0.0), vec3(_mouse.y * 0.01, _mouse.x * 0.01, 0.0), 1.0); \
+    vec3 posForHeart = transform(pos, vec3(0.0), vec3(_mouse.y * 0.01 + 3.14159, -_mouse.x * 0.01, 0.0), 1.0); \
     float dance = cos(_time.x * 6.0) * 0.06; \
     float sacle = 0.7 + dance; \
     \
     s = fmin(s, packFname( \
             0.0, 0.0, \
-            fractalHeart(transform(posForHeart, vec3(0.45, 0.5, 0.0), vec3(0.0, 0.0, -0.35 + dance * 0.51), sacle), 1.7) * sacle, \
+            fractalHeart(transform(posForHeart, vec3(0.45, 0.5, 0.0), vec3(0.0, 0.0, -0.35 + dance * 0.51), sacle), 1.7, 1.0) * sacle, \
             1.0 \
         )); \
     \
     s = smin(s, packFname( \
             0.0, 0.0, \
-            fractalHeart(transform(posForHeart, vec3(-0.45, 0.5, 0.0), vec3(0.0, 0.0, 0.35 - dance * 0.51), sacle), 1.7) * sacle, \
-            2.0 \
-        ), 2.1); \
+            fractalHeart(transform(posForHeart, vec3(-0.45, 0.5, 0.0), vec3(0.0, 0.0, 0.35 - dance * 0.51), sacle), 1.7, 1.0) * sacle, \
+            1.0 \
+        ), 4.1); \
+    \
+    sacle = 0.9 + dance; \
+    s = fmin(s, packFname( \
+            0.0, 0.0, \
+            fractalHeart(transform(posForHeart, vec3(-0.45, 0.5, 0.0), vec3(0.0, 0.0, 0.35 + dance * 0.51), sacle), 1.4, 2.0) * sacle, \
+            1.0 \
+        )); \
+    \
+    s = smin(s, packFname( \
+            0.0, 0.0, \
+            fractalHeart(transform(posForHeart, vec3(0.45, 0.5, 0.0), vec3(0.0, 0.0, -0.35 - dance * 0.51), sacle), 1.4, 2.0) * sacle, \
+            1.0 \
+        ), 4.1); \
     \
     return s; \
 } \
@@ -115,21 +132,33 @@ void _frag(in vec4 fragCoord, out vec4 fragColor)
     vec3 dir = normalize(vec3(vpos, 1.0));
     vec3 pos = vec3(0.0, 0.0, -3.0);
     vec3 sun = normalize(SUN);
+    vec3 suncol = SUNCOL * 0.7;
+
+    vec3 l2 = vec3(0.0, -1.0, 0.0);
+    vec3 l2Col = vec3(1.0, 0.2, 0.15) * 1.4;
 
     float dis = march(dir, pos, MAX_T);
     vec4 surface = surfaceScene(pos + dir * dis);
     vec3 normal = calNormal(pos + dir * dis);
 
-    float shadow = clamp(march(sun, pos + dir * dis + sun * E * 8.0, MAX_T / 4.0), 0.0, 1.0);
+    float shadow = clamp(march(sun, pos + dir * dis + sun * E * 6.0, MAX_T / 4.0), 0.0, 1.0);
+    float shadow2 = clamp(march(l2, pos + dir * dis + l2 * E * 6.0, MAX_T / 4.0), 0.0, 1.0);
 
-    float ntol = dot(normal, sun);
     float subsurface = 0.5;
 
     vec3 col = albedo(ID(surface));
 
-    vec3 face = mix(col * max(0.0, ntol) * SUNCOL * shadow, SUB0 * (0.5 + 0.5 * ntol) * SUNCOL, subsurface) + col * ENV;
+    vec3 face = col * ENV;
 
-    fragColor = vec4(dis < FAR ? face : ENV, 1.0);
+    face = mix(face, ENV * face, pow(1.0 - max(0.0, dot(normal, -dir)), 6.0));
+
+    face += calLight(col, normal, dir, suncol, sun, shadow, subsurface);
+
+    face += calLight(col, normal, dir, l2Col, l2, shadow2, subsurface);
+
+    face = mix(face, ENV, pow(clamp(dis * 0.25, 0.0, 1.0), 3.0)); // fog
+
+    fragColor = vec4((dis < FAR ? face : ENV) * clamp(1.7 - pow(length(fragCoord.xy * 2.0 - 1.0), 1.3), 0.0, 1.0), 1.0);
 }
 
 #include "../../shaderLib/templateEnd.frag.glsl"
