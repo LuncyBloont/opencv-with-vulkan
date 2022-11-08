@@ -6,7 +6,7 @@
 #define UV(v4) v4.xy
 #define ID(v4) v4.w
 
-#define MAX_T 128
+#define MAX_T 128.0
 #define FAR 100.0
 #define E 0.001
 
@@ -36,6 +36,29 @@ vec4 fmin(vec4 a, vec4 b)
 vec4 fmax(vec4 a, vec4 b)
 {
     return a.z >= b.z ? a : b;
+}
+
+float smin(float a, float b, float k)
+{
+    float f = pow(clamp(pow(k, 2.0) * abs(a - b), 0.0, 1.0) - 1.0, 2.0);
+
+    return min(a, b) - f * 0.25 / pow(k, 2.0);
+}
+
+float smax(float a, float b, float k)
+{
+    float f = smin(-a, -b, k);
+    return -f;
+}
+
+float fmin(float a, float b)
+{
+    return a < b ? a : b;
+}
+
+float fmax(float a, float b)
+{
+    return a >= b ? a : b;
 }
 
 float scaleF0(float x, float scale)
@@ -103,3 +126,15 @@ vec3 transform(vec3 pos, vec3 offset, vec3 rotation, float scale)
     
     return r * (pos - offset) / scale;
 }
+
+#define NORMAL(pos, sdf, ARGS) normalize( \
+        vec2(1.0, -1.0).xxy * (sdf(pos + vec2(1.0, -1.0).xxy * E, ARGS) - sdf(pos, ARGS)) +  \
+        vec2(1.0, -1.0).xyx * (sdf(pos + vec2(1.0, -1.0).xyx * E, ARGS) - sdf(pos, ARGS)) +  \
+        vec2(1.0, -1.0).yxx * (sdf(pos + vec2(1.0, -1.0).yxx * E, ARGS) - sdf(pos, ARGS)) +  \
+        vec2(1.0, -1.0).yyx * (sdf(pos + vec2(1.0, -1.0).yyx * E, ARGS) - sdf(pos, ARGS)) +  \
+        vec2(1.0, -1.0).yxy * (sdf(pos + vec2(1.0, -1.0).yxy * E, ARGS) - sdf(pos, ARGS)) +  \
+        vec2(1.0, -1.0).xyy * (sdf(pos + vec2(1.0, -1.0).xyy * E, ARGS) - sdf(pos, ARGS)) +  \
+        vec2(1.0, -1.0).yyy * (sdf(pos + vec2(1.0, -1.0).yyy * E, ARGS) - sdf(pos, ARGS)) +  \
+        vec2(1.0, -1.0).xxx * (sdf(pos + vec2(1.0, -1.0).xxx * E, ARGS) - sdf(pos, ARGS))  \
+    )  \
+

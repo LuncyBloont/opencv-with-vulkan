@@ -13,60 +13,89 @@
 
 #include "kit.frag.glsl"
 
-vec4 scene(vec3 pos)
+float fractalHeart(vec3 pos, float h)
 {
-    vec4 s = vec4(0.0, 0.0, FAR, 0.0);
-    float d;
-    vec3 posForHeart = transform(pos, vec3(0.0), vec3(_mouse.y * 0.01, _mouse.x * 0.01, 0.0), 1.0);
-    
-    float dance = cos(_time.x * 6.0) * 0.06;
-    float sacle = 0.7 + dance;
-    // d = sdfCone2(transform(posForHeart, vec3(0.45, 0.5, 0.0), vec3(0.0, 0.0, -0.35 + dance * 0.51), sacle), 1.7) * sacle;
-    s = fmin(s, vec4(
-            0.0, 0.0, 
-            sdfCone2(transform(posForHeart, vec3(0.45, 0.5, 0.0), vec3(0.0, 0.0, -0.35 + dance * 0.51), sacle), 1.7) * sacle,
-            1.0
-        ));
+    float d = sdfCone2(pos, h);
+    float sub = 0.1;
 
-    // d = sdfCone2(transform(posForHeart, vec3(-0.45, 0.5, 0.0), vec3(0.0, 0.0, 0.35 - dance * 0.51), sacle), 1.7) * sacle;
-    s = smin(s, vec4(
-            0.0, 0.0, 
-            sdfCone2(transform(posForHeart, vec3(-0.45, 0.5, 0.0), vec3(0.0, 0.0, 0.35 - dance * 0.51), sacle), 1.7) * sacle,
-            2.0
-        ), 2.1);
+    vec2 uv = vec2(
+        atan(pos.z, pos.x),
+        atan(pos.y, length(pos.xz))
+    );
 
-    return s;
+    vec2 cuv = (floor(uv * 5.0) + vec2(0.5)) / 5.0;
+
+    vec3 ctr = vec3(cos(cuv.y) * cos(cuv.x), sin(cuv.y), cos(cuv.y) * sin(cuv.x));
+    ctr += ctr * -sdfCone2(ctr, h);
+
+    return abs(d) < sub * 2.0 ? smin(d, sdfShpere(transform(pos - ctr, vec3(0.0), vec3(0.0), sub)) * sub, 4.0) : d;
 }
 
-vec4 march(vec3 dir, vec3 pos)
-{
-    vec4 s = vec4(0.0, 0.0, 0.0, 0.0);
-    for (uint i = 0; i < MAX_T; ++i)
-    {
-        vec4 dis = scene(pos + DIS(s) * dir);
-        s = vec4(UV(dis), DIS(dis) + DIS(s), ID(dis));
+#define DECLARE_SCENE(fname, type, dInit, packFname) \
+type fname(vec3 pos) \
+{ \
+    type s = dInit; \
+    vec3 posForHeart = transform(pos, vec3(0.0), vec3(_mouse.y * 0.01, _mouse.x * 0.01, 0.0), 1.0); \
+    float dance = cos(_time.x * 6.0) * 0.06; \
+    float sacle = 0.7 + dance; \
+    \
+    s = fmin(s, packFname( \
+            0.0, 0.0, \
+            fractalHeart(transform(posForHeart, vec3(0.45, 0.5, 0.0), vec3(0.0, 0.0, -0.35 + dance * 0.51), sacle), 1.7) * sacle, \
+            1.0 \
+        )); \
+    \
+    s = smin(s, packFname( \
+            0.0, 0.0, \
+            fractalHeart(transform(posForHeart, vec3(-0.45, 0.5, 0.0), vec3(0.0, 0.0, 0.35 - dance * 0.51), sacle), 1.7) * sacle, \
+            2.0 \
+        ), 2.1); \
+    \
+    return s; \
+} \
 
-        if (DIS(dis) < E)
+float depthPack(float x, float y, float z, float w)
+{
+    return z;
+}
+
+vec4 surfacePack(float x, float y, float z, float w)
+{
+    return vec4(x, y, z, w);
+}
+
+DECLARE_SCENE(depthScene, float, FAR, depthPack)
+DECLARE_SCENE(surfaceScene, vec4, vec4(0.0, 0.0, FAR, 0.0), surfacePack)
+
+float march(vec3 dir, vec3 pos, float max_t)
+{
+    float d = 0.0;
+    for (float i = 0.0; i < max_t; i += 1.0)
+    {
+        float dis = depthScene(pos + d * dir);
+        d = d + dis * 0.5;
+
+        if (dis < E)
         {
-            return s;
+            return d;
         }
     }
-    return vec4(0.0, 0.0, FAR, 0.0);
+    return FAR;
 }
 
 vec3 calNormal(vec3 pos)
 {
     vec2 offset = vec2(1.0, -1.0);
-    vec4 s = scene(pos);
+    float d = depthScene(pos);
     return normalize(
-        offset.xxy * (DIS(scene(pos + offset.xxy * E)) - DIS(s)) + 
-        offset.xyx * (DIS(scene(pos + offset.xyx * E)) - DIS(s)) + 
-        offset.yxx * (DIS(scene(pos + offset.yxx * E)) - DIS(s)) + 
-        offset.yyx * (DIS(scene(pos + offset.yyx * E)) - DIS(s)) + 
-        offset.yxy * (DIS(scene(pos + offset.yxy * E)) - DIS(s)) + 
-        offset.xyy * (DIS(scene(pos + offset.xyy * E)) - DIS(s)) +
-        offset.yyy * (DIS(scene(pos + offset.yyy * E)) - DIS(s)) +
-        offset.xxx * (DIS(scene(pos + offset.xxx * E)) - DIS(s))
+        offset.xxy * (depthScene(pos + offset.xxy * E) - d) + 
+        offset.xyx * (depthScene(pos + offset.xyx * E) - d) + 
+        offset.yxx * (depthScene(pos + offset.yxx * E) - d) + 
+        offset.yyx * (depthScene(pos + offset.yyx * E) - d) + 
+        offset.yxy * (depthScene(pos + offset.yxy * E) - d) + 
+        offset.xyy * (depthScene(pos + offset.xyy * E) - d) +
+        offset.yyy * (depthScene(pos + offset.yyy * E) - d) +
+        offset.xxx * (depthScene(pos + offset.xxx * E) - d)
     );
 }
 
@@ -87,10 +116,11 @@ void _frag(in vec4 fragCoord, out vec4 fragColor)
     vec3 pos = vec3(0.0, 0.0, -3.0);
     vec3 sun = normalize(SUN);
 
-    vec4 surface = march(dir, pos);
-    vec3 normal = calNormal(pos + dir * DIS(surface));
+    float dis = march(dir, pos, MAX_T);
+    vec4 surface = surfaceScene(pos + dir * dis);
+    vec3 normal = calNormal(pos + dir * dis);
 
-    float shadow = clamp(DIS(march(sun, pos + dir * DIS(surface) + sun * E * 8.0)), 0.0, 1.0);
+    float shadow = clamp(march(sun, pos + dir * dis + sun * E * 8.0, MAX_T / 4.0), 0.0, 1.0);
 
     float ntol = dot(normal, sun);
     float subsurface = 0.5;
@@ -99,7 +129,7 @@ void _frag(in vec4 fragCoord, out vec4 fragColor)
 
     vec3 face = mix(col * max(0.0, ntol) * SUNCOL * shadow, SUB0 * (0.5 + 0.5 * ntol) * SUNCOL, subsurface) + col * ENV;
 
-    fragColor = vec4(DIS(surface) < FAR ? face : ENV, 1.0);
+    fragColor = vec4(dis < FAR ? face : ENV, 1.0);
 }
 
 #include "../../shaderLib/templateEnd.frag.glsl"

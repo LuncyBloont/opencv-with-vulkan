@@ -27,7 +27,7 @@ float mltsg::endMark(const char* msg)
     
     }
     markedTime = clock();
-    return dur;
+    return dur + 0.00001f;
 }
 
 float mltsg::areaOfTriangle(glm::vec2 A, glm::vec2 B, glm::vec2 C)

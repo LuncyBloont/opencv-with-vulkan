@@ -1,3 +1,4 @@
+#include "glm/common.hpp"
 #include "helper.h"
 #include "opencv2/highgui.hpp"
 #include "stage.h"
@@ -45,7 +46,9 @@ int main()
         cv::createTrackbar("Shape fac2", "Sweet heart", &fac2, 600);
 
         int age = 0;
+        float fps = 1.0f;
         while (true) {
+            mltsg::markTime();
 
             assets.uniVec[0].x = fac0 * 1.0f / 600.0f;
             assets.uniVec[0].y = fac1 * 1.0f / 600.0f;
@@ -59,6 +62,13 @@ int main()
             }
 
             age += 1;
+
+            fps = glm::mix(fps, 1.0f / mltsg::endMark(""), 0.5f);
+
+            if (age % 60 == 0)
+            {
+                mltsg::Log("FPS: %f\n", fps);
+            }
         }
 
     }
