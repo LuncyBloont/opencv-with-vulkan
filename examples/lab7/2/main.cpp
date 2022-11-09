@@ -46,9 +46,9 @@ int main()
         int fac0 = 502;
         int fac1 = 335;
         int fac2 = 163;
-        cv::createTrackbar("Shape fac0", "Sweet heart", &fac0, 600);
-        cv::createTrackbar("Shape fac1", "Sweet heart", &fac1, 600);
-        cv::createTrackbar("Shape fac2", "Sweet heart", &fac2, 600);
+        // cv::createTrackbar("Shape fac0", "Sweet heart", &fac0, 600);
+        // cv::createTrackbar("Shape fac1", "Sweet heart", &fac1, 600);
+        // cv::createTrackbar("Shape fac2", "Sweet heart", &fac2, 600);
 
         int age = 0;
         float fps = 1.0f;

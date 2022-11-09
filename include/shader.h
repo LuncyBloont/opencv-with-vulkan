@@ -91,14 +91,14 @@ glm::vec4 sample(const cv::Mat& img, glm::vec2 uv,
         glm::mix(getPixel<Int, scale>(img, x, y + 1, uvtype), getPixel<Int, scale>(img, x + 1, y + 1, uvtype), offset.x), offset.y);
 }
 
-template <typename Int, int32_t scale>
+template <typename Int, int32_t Scale>
 glm::vec4 texelFetch(const cv::Mat& img, glm::vec2 uv, SampleUV uvtype = SampleUV::Repeat)
 {
     glm::vec2 near = glm::floor(uv * glm::vec2(img.cols, img.rows));
     int x = int(near.x);
     int y = int(near.y);
 
-    return getPixel<Int, scale>(img, x, y, uvtype);
+    return getPixel<Int, Scale>(img, x, y, uvtype);
 }
 
 template <typename Int, int32_t scale, typename Shader>
@@ -120,7 +120,7 @@ void unitDo(int r0, int r1, int c0, int c1, cv::Mat* img, const Shader* shader)
     }
 }
 
-template <typename Int, int32_t scale, int THREAD_HOLD, typename Shader>
+template <typename Int, int32_t Scale, int THREAD_HOLD, typename Shader>
 void multiProcess(cv::Mat& img, const Shader& shader)
 {
     std::vector<std::thread*> threadGroup;
@@ -131,7 +131,7 @@ void multiProcess(cv::Mat& img, const Shader& shader)
         int r1 = std::min(img.rows, i + THREAD_HOLD);
         int c0 = 0;
         int c1 = img.cols;
-        std::thread* t = new std::thread(unitDo<Int, scale, Shader>, r0, r1, c0, c1, &img, &shader);
+        std::thread* t = new std::thread(unitDo<Int, Scale, Shader>, r0, r1, c0, c1, &img, &shader);
         threadGroup.push_back(t);
     }
 
@@ -142,20 +142,30 @@ void multiProcess(cv::Mat& img, const Shader& shader)
     }
 }
 
-template <typename Int, int32_t scale, typename Shader>
+enum class ProcessRoute
+{
+    FF = 0,
+    FB = 1,
+    BB = 3,
+    BF = 2
+};  
+
+template <typename Int, int32_t Scale, ProcessRoute route = ProcessRoute::FF, typename Shader>
 void process(cv::Mat& img, const Shader& shader)
 {
-    float limit = float(scale);
+    float limit = float(Scale);
     for (int i = 0; i < img.rows; ++i)
     {
-        Int* row = img.ptr<Int>(i);
+        int I = (int(route) & 2) == 0 ? i : img.rows - 1 - i;
+        Int* row = img.ptr<Int>(I);
         for (int j = 0; j < img.cols; ++j)
         {
-            glm::vec2 uv = glm::vec2(float(j + 0.5f) / img.cols, float(i + 0.5f) / img.rows);
+            int J = (int(route) & 1) == 0 ? j : img.cols - 1 - j;
+            glm::vec2 uv = glm::vec2(float(J + 0.5f) / img.cols, float(I + 0.5f) / img.rows);
             glm::vec4 col = shader(uv);
             for (int c = 0; c < img.channels(); ++c)
             {
-                row[j * img.channels() + c] = static_cast<Int>(glm::clamp(col[c], 0.0f, 1.0f) * limit);
+                row[J * img.channels() + c] = static_cast<Int>(glm::clamp(col[c], 0.0f, 1.0f) * limit);
             }
         }
     }
@@ -164,6 +174,5 @@ void process(cv::Mat& img, const Shader& shader)
 }
 
 #include "glslStyle.hpp"
-#include "helper.h"
 
 #endif

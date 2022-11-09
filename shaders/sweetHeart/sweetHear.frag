@@ -16,7 +16,7 @@
 float fractalHeart(vec3 pos, float h, float uvs)
 {
     float d = sdfCone2(pos, h);
-    float sub = 0.3;
+    float sub = 0.1;
 
     if (abs(d) > sub * 2.0)
     {
@@ -32,7 +32,7 @@ float fractalHeart(vec3 pos, float h, float uvs)
 
     float dp = texelFetch(_tex0, ivec2(suv), 0).r * (cos(uv.y + _time.x * 12.0) * 0.2 + 0.8);
 
-    return abs(d) - dp * 0.15;
+    return abs(d) + 0.05 - dp * 0.15;
 }
 
 #define DECLARE_SCENE(fname, type, dInit, packFname) \
@@ -92,7 +92,7 @@ float march(vec3 dir, vec3 pos, float max_t)
         float dis = depthScene(pos + d * dir);
         d = d + dis * 0.5;
 
-        if (dis < E)
+        if (dis < E * d || d > FAR)
         {
             return d;
         }
