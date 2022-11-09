@@ -138,9 +138,9 @@ vec3 transform(vec3 pos, vec3 offset, vec3 rotation, float scale)
         vec2(1.0, -1.0).xxx * (sdf(pos + vec2(1.0, -1.0).xxx * E, ARGS) - sdf(pos, ARGS))  \
     )  \
 
-vec3 calLight(vec3 col, vec3 normal, vec3 eye, vec3 suncol, vec3 sun, float shadow, float subsurface)
+vec3 calLight(vec3 col, vec3 sub, vec3 normal, vec3 eye, vec3 suncol, vec3 sun, float shadow, float subsurface)
 {
     float ntol = dot(normal, sun);
-    return mix(col * max(0.0, ntol) * suncol * shadow, SUB0 * (0.5 + 0.5 * ntol) * suncol, subsurface) + 
+    return mix(col * max(0.0, ntol) * suncol * shadow, sub * (0.5 + 0.5 * ntol) * suncol, subsurface) + 
         pow(max(0.0, dot(reflect(normal, eye), sun)), 64.0) * suncol * shadow;
 }

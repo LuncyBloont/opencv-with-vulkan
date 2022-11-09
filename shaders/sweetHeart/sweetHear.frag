@@ -152,9 +152,9 @@ void _frag(in vec4 fragCoord, out vec4 fragColor)
 
     face = mix(face, ENV * face, pow(1.0 - max(0.0, dot(normal, -dir)), 6.0));
 
-    face += calLight(col, normal, dir, suncol, sun, shadow, subsurface);
+    face += calLight(col, SUB0, normal, dir, suncol, sun, shadow, subsurface);
 
-    face += calLight(col, normal, dir, l2Col, l2, shadow2, subsurface);
+    face += calLight(col, SUB0, normal, dir, l2Col, l2, shadow2, subsurface);
 
     face = mix(face, ENV, pow(clamp(dis * 0.25, 0.0, 1.0), 3.0)); // fog
 
