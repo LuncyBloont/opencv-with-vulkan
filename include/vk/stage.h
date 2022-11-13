@@ -72,6 +72,7 @@ class Stage
 {
 private:
     GPUMat* frame;
+    GPUMat* mirror;
     cv::Mat data;
 
     VkFramebuffer frameBuffer;

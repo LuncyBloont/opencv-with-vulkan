@@ -8,7 +8,7 @@
 void main()
 {
 #ifdef SHOW_FOR_OPENCV
-    vec4 coord = vec4(_uv.x, 1.0 - _uv.y, _uv.x * _frame.x, (1.0 - _uv.y) * _frame.y);
+    vec4 coord = vec4(_uv.x, 1.0 - _uv.y - 1.0 / _frame.y, _uv.x * _frame.x, (1.0 - _uv.y) * _frame.y - 1.0);
     _frag(coord, _outColor);
     _outColor = _outColor.bgra;
 #else

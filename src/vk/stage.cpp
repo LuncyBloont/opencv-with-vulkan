@@ -53,6 +53,17 @@ mltsg::Stage::Stage(uint32_t width, uint32_t height, StageProperties* assets, bo
     data = cv::Mat(height, width, HDR ? CV_32SC4 : CV_8UC4);
     
     frame = new GPUMat(&data, MLTSG_WRITE_MAT, false, MLTSG_USE_RAW, HDR);
+    mirror = new GPUMat(&data, MLTSG_WRITE_MAT, false, MLTSG_USE_RAW, HDR);
+
+    transitionImageLayout(frame->image, frame->format, 0, {
+        VK_IMAGE_LAYOUT_UNDEFINED,
+        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+    });
+
+    transitionImageLayout(mirror->image, mirror->format, 0, {
+        VK_IMAGE_LAYOUT_UNDEFINED,
+        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+    });
 
     createShader();
 
@@ -74,10 +85,12 @@ mltsg::Stage::~Stage()
     cleanup();
 
     delete frame;
+    delete mirror;
 }
 
 void mltsg::Stage::render(uint32_t newAge)
 {
+
     if (age >= newAge)
     {
         return;
@@ -91,11 +104,6 @@ void mltsg::Stage::render(uint32_t newAge)
             assets->reference[i]->render(newAge);
         }
     }
-    
-    transitionImageLayout(frame->image, frame->format, 0, {
-        VK_IMAGE_LAYOUT_UNDEFINED,
-        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
-    });
 
     updateUniform();
 
@@ -130,8 +138,17 @@ void mltsg::Stage::render(uint32_t newAge)
 
     endCommandOnce(cmd, fence);
 
-    transitionImageLayout(frame->image, frame->format, 0, {
-        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+    transitionImageLayout(mirror->image, mirror->format, 0, {
+        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
+    });
+
+    copyImageToImage(frame->image, mirror->image, 
+        VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 
+        { frame->width(), frame->height(), 1 }, 0);
+    
+    transitionImageLayout(mirror->image, mirror->format, 0, {
+        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
         VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
     });
     
@@ -394,8 +411,8 @@ void mltsg::Stage::writeUniform()
     for (uint32_t i = 0; i < MLTSG_REFERENCE_COUNT; i++)
     {
         referenceInfos[i].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        referenceInfos[i].imageView = assets->reference[i] ? assets->reference[i]->frame->view : noneRefTexture->view;
-        referenceInfos[i].sampler = assets->reference[i] ? assets->reference[i]->frame->sampler->sampler : noneRefTexture->sampler->sampler;
+        referenceInfos[i].imageView = assets->reference[i] ? assets->reference[i]->mirror->view : noneRefTexture->view;
+        referenceInfos[i].sampler = assets->reference[i] ? assets->reference[i]->mirror->sampler->sampler : noneRefTexture->sampler->sampler;
     }
 
     writeReference.pImageInfo = referenceInfos;
@@ -428,7 +445,7 @@ void mltsg::Stage::buildRenderPass()
 {
     VkAttachmentDescription attachments[1];
     attachments[0].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    attachments[0].finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    attachments[0].finalLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
     attachments[0].format = frame->format;
     attachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
     attachments[0].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;

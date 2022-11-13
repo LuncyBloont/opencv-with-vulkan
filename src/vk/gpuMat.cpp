@@ -108,11 +108,11 @@ mltsg::GPUMat::GPUMat(cv::Mat* mat, bool readable, bool genMip , bool srgb, bool
 
     if (readable == MLTSG_READ_MAT)
     {
-        imgInfo.usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+        imgInfo.usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
     }
     else
     {
-        imgInfo.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+        imgInfo.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
     }
 
     format = imgInfo.format;
@@ -257,15 +257,12 @@ void mltsg::GPUMat::apply()
     }
     else
     {
-        transitionImageLayout(image, format, 0, { VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL });
-
         copyImageToBuffer(image, cpuData->cols, cpuData->rows, 0, imageReadFromGPUBuffer->buffer);
 
         imageReadFromGPUBuffer->mapMem();
         memcpy(cpuData->data, imageReadFromGPUBuffer->data, cpuData->total() * cpuData->elemSize());
         imageReadFromGPUBuffer->unmapMem();
         
-        transitionImageLayout(image, format, 0, { VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL });
     }
 }
 
@@ -274,8 +271,6 @@ void mltsg::GPUMat::peek(void (*func)(GPUMat* self, void* userData), void* data)
     makeValid();
     if (readable == MLTSG_WRITE_MAT)
     {
-        transitionImageLayout(image, format, 0, { VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL });
-
         copyImageToBuffer(image, cpuData->cols, cpuData->rows, 0, imageReadFromGPUBuffer->buffer);
 
         imageReadFromGPUBuffer->mapMem();
@@ -286,8 +281,6 @@ void mltsg::GPUMat::peek(void (*func)(GPUMat* self, void* userData), void* data)
         cpuData->data = old;
 
         imageReadFromGPUBuffer->unmapMem();
-        
-        transitionImageLayout(image, format, 0, { VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL });
     }
 }
 

@@ -70,6 +70,13 @@ void mltsg::transitionImageLayout(VkImage image, VkFormat format, uint32_t level
         sourceStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
         destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
     }
+    else if (transition == mltsg::ImageLayoutTransition{ VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL })
+    {
+        barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+        barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+        sourceStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+        destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+    }
     else if (transition == mltsg::ImageLayoutTransition{ VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL })
     {
         barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
@@ -162,6 +169,29 @@ void mltsg::copyBufferToBuffer(VkBuffer src, VkBuffer dst, VkDeviceSize size)
     copy.size = size;
 
     vkCmdCopyBuffer(cmd, src, dst, 1, &copy);
+
+    mltsg::endCommandOnce(cmd);
+}
+
+void mltsg::copyImageToImage(VkImage src, VkImage dst, VkImageLayout srcLayout, VkImageLayout dstLayout, VkExtent3D size, uint32_t level)
+{
+    VkCommandBuffer cmd = mltsg::beginCommandOnce();
+    
+    VkImageCopy copy{};
+
+    copy.srcOffset = { 0, 0, 0 };
+    copy.srcSubresource = {
+        VK_IMAGE_ASPECT_COLOR_BIT,
+        level, 0, 1
+    };
+    copy.dstOffset = { 0, 0, 0 };
+    copy.dstSubresource = {
+        VK_IMAGE_ASPECT_COLOR_BIT,
+        level, 0, 1
+    };
+    copy.extent = size;
+
+    vkCmdCopyImage(cmd, src, srcLayout, dst, dstLayout, 1, &copy);
 
     mltsg::endCommandOnce(cmd);
 }
