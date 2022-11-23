@@ -2,7 +2,7 @@
 #include <opencv2/imgproc.hpp>
 #include <opencv2/highgui.hpp>
 
-const bool blur = true;
+const bool blur = false;
 
 int main()
 {
@@ -17,10 +17,8 @@ int main()
 
     // gray = input;
 
-    cv::imshow("Input", gray);
-
     const int gaussionSize = 3;
-    const float theta = 0.8f;
+    const float theta = 1.1f;
     float gaussian[gaussionSize];
     for (size_t i = 0; i < gaussionSize; ++i)
     {
@@ -40,7 +38,7 @@ int main()
         auto&& gaussionFilter = [&](glm::vec2 uv) {
             glm::vec4 v(0.f);
             float base = 0.f;
-            for (int u = -gaussionSize; u <= gaussionSize; ++u)
+            for (int u = -gaussionSize + 1; u <= gaussionSize - 1; ++u)
             {
                 glm::vec2 offset = (HV ? glm::vec2(1.f, 0.f) : glm::vec2(0.f, 1.f)) * (float)u / glm::vec2(gray.cols, gray.rows);
                 float p = gaussian[abs(u)];
@@ -57,8 +55,10 @@ int main()
         mltsg::multiProcess<MLTSG_U8, 32>(gray, gaussionFilter);
     }
 
-    cv::Mat sobelRes0;
-    cv::Mat sobelRes1;
+    cv::imshow(blur ? "Input (Blur)" : "Input", gray);
+
+    cv::Mat sobelRes0(gray.size(), gray.type());
+    cv::Mat sobelRes1(gray.size(), gray.type());
     cv::Mat sobelResMerged(gray.size(), gray.type());
 
     cv::Sobel(gray, sobelRes0, CV_16SC1, 1, 0);
@@ -67,7 +67,7 @@ int main()
     auto&& scaleToAbs = [&](glm::vec2 uv) {
         glm::vec4 col0 = mltsg::texelFetch<int16_t, 255>(sobelRes0, uv);
         glm::vec4 col1 = mltsg::texelFetch<int16_t, 255>(sobelRes1, uv);
-        return .8f * glm::sqrt(glm::pow(col0, glm::vec4(2.f)) + glm::pow(col1, glm::vec4(2.f)));
+        return glm::sqrt(glm::pow(col0, glm::vec4(2.f)) + glm::pow(col1, glm::vec4(2.f))) / 1.414f;
     };
     mltsg::multiProcess<MLTSG_U8, 32>(sobelResMerged, scaleToAbs);
 
@@ -88,17 +88,18 @@ int main()
     mltsg::multiProcess<MLTSG_U8, 32>(rawRes, [&](glm::vec2 uv) {
         glm::vec2 dir = mltsg::texelFetch<MLTSG_U8>(gradient, uv);
         dir = dir * 2.f - 1.f;
+        dir /= glm::max(glm::abs(dir.x), glm::abs(dir.y));
         dir = dir / glm::vec2(gray.cols, gray.rows);
         float c = mltsg::sample<MLTSG_U8>(sobelResMerged, uv).r;
         float c0 = mltsg::sample<MLTSG_U8>(sobelResMerged, uv + dir).r;
         float c1 = mltsg::sample<MLTSG_U8>(sobelResMerged, uv - dir).r;
         if (c > c0 && c > c1)
         {
-            if (c > .14f)
+            if (c > .4f / 1.414f)
             {
                 return glm::vec4(1.f);
             }
-            else if (c > .05f)
+            else if (c > .1f / 1.414f)
             {
                 return glm::vec4(.5f);
             }
@@ -106,21 +107,39 @@ int main()
         return glm::vec4(0.f);
     });
 
-    mltsg::multiProcess<MLTSG_U8, 32>(myRes, [&](glm::vec2 uv) {
-        glm::vec4 c = mltsg::texelFetch<MLTSG_U8>(rawRes, uv);
-        if (c.x < .1f) { return glm::vec4(0.f); }
-        if (c.x > .6f) { return glm::vec4(1.f); }
-        for (int u = -1; u <= 1; ++u)
+    cv::imshow("Raw Result", rawRes);
+    
+    for (int u = 0; u < rawRes.cols; ++u)
+    {
+        for (int v = 0; v < rawRes.rows; ++v)
         {
-            for (int v = -1; v <= 1; ++v)
-            {
-                if (mltsg::texelFetch<MLTSG_U8>(rawRes, uv + glm::vec2(u, v) / glm::vec2(gray.cols, gray.rows)).x > .6f)
+            auto&& bfs = [&](auto&& self, int u, int v) {
+                uint8_t* k = rawRes.ptr(v) + u * rawRes.channels();
+                if (*k < 200) { return; }
+                for (int ou = -1; ou <= 1; ++ou)
                 {
-                    return glm::vec4(.1f);
+                    for (int ov = -1; ov <= 1; ++ov)
+                    {
+                        if (!mltsg::inBound(u + ou, v + ov, rawRes.cols, rawRes.rows)) { continue; }
+                        uint8_t* nk = rawRes.ptr(v + ov) + (u + ou) * rawRes.channels();
+                        if (*nk > 60 && *nk < 200)
+                        {
+                            *nk = 255;
+                            self(self, u + ou, v + ov);
+                        }
+                    }
                 }
-            }
+            };
+
+            bfs(bfs, u, v);
         }
-        return glm::vec4(0.f);
+    }
+
+    cv::imshow("Raw Result (Linked)", rawRes);
+
+    mltsg::multiProcess<MLTSG_U8, 32>(myRes, [&](glm::vec2 uv) {
+        float k = mltsg::texelFetch<MLTSG_U8>(rawRes, uv).x;
+        return glm::vec4(k > .6f ? 1.f : 0.f);
     });
 
     cv::imshow("My Result", myRes);

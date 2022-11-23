@@ -183,7 +183,7 @@ cv::Mat equalizeHist(const cv::Mat& input, const cv::Mat& raw)
 }
 
 template <uint32_t CoreSize, typename Int, int32_t Scale, typename Type>
-cv::Mat genSDF2D(const cv::Mat& input, Type solid, float threshold, float disScale = 0.001f)
+cv::Mat genSDF2D(const cv::Mat& input, Type solid, float threshold, float disScale = 0.001f, int times = 1)
 {
     float core[CoreSize][CoreSize];
 
@@ -228,12 +228,21 @@ cv::Mat genSDF2D(const cv::Mat& input, Type solid, float threshold, float disSca
         return glm::vec4(old.x);
     };
 
-    route = true;
-    process<Int, Scale>(res, shader);
-    route = false;
-    process<Int, Scale, ProcessRoute::BB>(res, shader);
-
+    for (int t = 0; t < times; ++t)
+    {
+        route = true;
+        process<Int, Scale>(res, shader);
+        route = false;
+        process<Int, Scale, ProcessRoute::BB>(res, shader);
+    }
+    
     return res;
+}
+
+template <typename T>
+bool inBound(T x, T y, T w, T h, T zw = 0.f, T zh = 0.f)
+{
+    return x < w && y < h && x >= zw && y >= zh;
 }
 
 }
