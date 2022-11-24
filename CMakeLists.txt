@@ -5,7 +5,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(DEBUG "Off")
 
-set(LAB_PATH "./examples/lab9/1/main.cpp") # 选择实验代码目录
+set(LAB_PATH "./examples/lab10/1/main.cpp") # 选择实验代码目录
 
 include(CTest)
 enable_testing()

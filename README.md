@@ -34,6 +34,7 @@ set(
     DLLS
     "C:/OpenCV/opencv/build/x64/vc15/bin/opencv_world460.dll"
     "C:/OpenCV/opencv/build/x64/vc15/bin/opencv_world460d.dll"
+    "C:/OpenCV/opencv/build/x64/vc15/bin/opencv_videoio_ffmpeg460_64.dll"
 )
 ```
 

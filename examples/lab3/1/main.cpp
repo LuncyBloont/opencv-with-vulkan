@@ -1,10 +1,9 @@
 #include <iostream>
-#include "glm/glm.hpp"
+#include "helper.h"
 #include "opencv2/core/mat.hpp"
 #include "opencv2/highgui.hpp"
 #include "opencv2/videoio.hpp"
 #include "shader.h"
-#include "opencv2/core.hpp"
 
 #define VIDEO_PATH "../images/0.webm"
 
@@ -14,7 +13,7 @@ using namespace mltsg;
 
 int main()
 {
-    Log("running...\n");
+    mltsg::Log("running...\n");
     cv::VideoCapture video(VIDEO_PATH);
     cv::Mat frame, surface;
 
