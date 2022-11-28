@@ -3,7 +3,6 @@
 
 #include "glm/common.hpp"
 #include "glm/fwd.hpp"
-#include "opencv2/core/hal/interface.h"
 #include "opencv2/core/mat.hpp"
 #include <glm/glm.hpp>
 #include <opencv2/core.hpp>
