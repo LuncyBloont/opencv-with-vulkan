@@ -10,6 +10,7 @@
 #include <sys/stat.h>
 #include <thread>
 #include <vector>
+#include <iostream>
 
 namespace mltsg 
 {
@@ -30,6 +31,8 @@ enum class SamplePoint
 template <typename Int, int32_t scale> 
 glm::vec4 getPixel(const cv::Mat& img, int x, int y, SampleUV uvtype)
 {
+    // return (x + y) % 2 ? glm::vec4(1.f) : glm::vec4(0.f);
+    // return glm::fract(glm::vec4(x * .1f));
     float limit = float(scale);
     switch (uvtype) {
         case SampleUV::Repeat:
@@ -70,34 +73,36 @@ glm::vec4 getPixel(const cv::Mat& img, int x, int y, SampleUV uvtype)
     return res;
 }
 
-template <typename Int, int32_t scale>
-glm::vec4 sample(const cv::Mat& img, glm::vec2 uv, 
-    SampleUV uvtype = SampleUV::Repeat, SamplePoint pointtype = SamplePoint::Linear)
-{
-
-    glm::vec2 near = glm::floor(uv * glm::vec2(img.cols, img.rows));
-    int x = int(near.x);
-    int y = int(near.y);
-
-    if (pointtype == SamplePoint::Point)
-    {
-        return getPixel<Int, scale>(img, x, y, uvtype);
-    }
-    
-    glm::vec2 offset = glm::fract(uv * glm::vec2(img.cols, img.rows));
-    return glm::mix(
-        glm::mix(getPixel<Int, scale>(img, x, y, uvtype), getPixel<Int, scale>(img, x + 1, y, uvtype), offset.x), 
-        glm::mix(getPixel<Int, scale>(img, x, y + 1, uvtype), getPixel<Int, scale>(img, x + 1, y + 1, uvtype), offset.x), offset.y);
-}
-
 template <typename Int, int32_t Scale>
 glm::vec4 texelFetch(const cv::Mat& img, glm::vec2 uv, SampleUV uvtype = SampleUV::Repeat)
 {
-    glm::vec2 near = glm::floor(uv * glm::vec2(img.cols, img.rows));
+    glm::vec2 px = uv * glm::vec2(img.cols, img.rows);
+    glm::vec2 near = glm::floor(px);
+
     int x = int(near.x);
     int y = int(near.y);
 
     return getPixel<Int, Scale>(img, x, y, uvtype);
+}
+
+template <typename Int, int32_t scale>
+glm::vec4 sample(const cv::Mat& img, glm::vec2 uv, 
+    SampleUV uvtype = SampleUV::Repeat, SamplePoint pointtype = SamplePoint::Linear)
+{
+    if (pointtype == SamplePoint::Point)
+    {
+        return texelFetch<Int, scale>(img, uv, uvtype);
+    }
+
+    glm::vec2 px = uv * glm::vec2(img.cols, img.rows) - .5f;
+    glm::vec2 near = glm::floor(px);
+    int x = int(near.x);
+    int y = int(near.y);
+    
+    glm::vec2 offset = px - near;
+    return glm::mix(
+        glm::mix(getPixel<Int, scale>(img, x, y, uvtype), getPixel<Int, scale>(img, x + 1, y, uvtype), offset.x), 
+        glm::mix(getPixel<Int, scale>(img, x, y + 1, uvtype), getPixel<Int, scale>(img, x + 1, y + 1, uvtype), offset.x), offset.y);
 }
 
 template <typename Int, int32_t scale, typename Shader>
@@ -109,11 +114,11 @@ void unitDo(int r0, int r1, int c0, int c1, cv::Mat* img, const Shader* shader)
         Int* row = img->ptr<Int>(i);
         for (int j = c0; j < c1; ++j)
         {
-            glm::vec2 uv = glm::vec2(float(j + 0.5f) / img->cols, float(i + 0.5f) / img->rows);
+            glm::vec2 uv = glm::vec2((float(j) + .5f) / img->cols, (float(i) + .5f) / img->rows);
             glm::vec4 col = (*shader)(uv);
             for (int c = 0; c < img->channels(); ++c)
             {
-                row[j * img->channels() + c] = static_cast<Int>(glm::clamp(col[c], 0.0f, 1.0f) * limit);
+                row[j * img->channels() + c] = static_cast<Int>(glm::clamp(col[c], -1.0f, 1.0f) * limit);
             }
         }
     }
@@ -160,18 +165,16 @@ void process(cv::Mat& img, const Shader& shader)
         for (int j = 0; j < img.cols; ++j)
         {
             int J = (int(route) & 1) == 0 ? j : img.cols - 1 - j;
-            glm::vec2 uv = glm::vec2(float(J + 0.5f) / img.cols, float(I + 0.5f) / img.rows);
+            glm::vec2 uv = glm::vec2((float(J) + .5f) / img.cols, (float(I) + .5f) / img.rows);
             glm::vec4 col = shader(uv);
             for (int c = 0; c < img.channels(); ++c)
             {
-                row[J * img.channels() + c] = static_cast<Int>(glm::clamp(col[c], 0.0f, 1.0f) * limit);
+                row[J * img.channels() + c] = static_cast<Int>(glm::clamp(col[c], -1.0f, 1.0f) * limit);
             }
         }
     }
 }
 
 }
-
-#include "glslStyle.hpp"
 
 #endif

@@ -30,6 +30,7 @@ float areaOfTriangle(glm::vec2 A, glm::vec2 B, glm::vec2 C);
 float disToLine(glm::vec2 p, glm::vec2 A, glm::vec2 B);
 
 #define MLTSG_U8 uint8_t, 255
+#define MLTSG_HDR float, MLTSG_HDR_MAX
 
 
 #define MLTSG_Log _MLTSG_Log_Type_

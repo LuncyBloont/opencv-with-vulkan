@@ -18,10 +18,10 @@ def toN(nu, n, l, sw):
 def combine(name, s):
     return ', '.join([ '{}.{}'.format(name, i) for i in s ])
 
-def toVecN(n):
+def toVecN(n, name, sg):
     if n == 1:
-        return 'float'
-    return 'glm::vec{}'.format(n)
+        return sg
+    return 'glm::{}{}'.format(name, n)
 
 app('namespace mltsg\n{\n')
 
@@ -31,7 +31,20 @@ app('\n\n'.join([ (
                 '\n'.join([ (
                     
                     'inline {3} _{1}(const {0}& v) {{ return {3}({2}); }}'.format(
-                        toVecN(i), toN(b, i, j, sw), combine('v', toN(b, i, j, sw)), toVecN(j))
+                        toVecN(i, 'vec', 'float'), toN(b, i, j, sw), combine('v', toN(b, i, j, sw)), toVecN(j, 'vec', 'float'))
+                    
+                ) for sw in range(2) ])
+            ) for b in range(pow(i, j)) ])
+        ) for j in range(1, i + 1) ])
+    ) for i in range(2, 5) ]))
+
+app('\n\n'.join([ (
+        '\n'.join([ (
+            '\n'.join([ (
+                '\n'.join([ (
+                    
+                    'inline {3} _{1}(const {0}& v) {{ return {3}({2}); }}'.format(
+                        toVecN(i, 'ivec', 'int'), toN(b, i, j, sw), combine('v', toN(b, i, j, sw)), toVecN(j, 'ivec', 'int'))
                     
                 ) for sw in range(2) ])
             ) for b in range(pow(i, j)) ])
@@ -41,5 +54,5 @@ app('\n\n'.join([ (
 app('\n}\n')
 app("#endif")
 
-with open('./include/glslStyle.hpp', 'w') as f:
+with open('./glslStyle.hpp', 'w') as f:
     f.write(code)

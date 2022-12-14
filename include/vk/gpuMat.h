@@ -71,6 +71,9 @@ struct GPUMat
 
     uint32_t width() const;
     uint32_t height() const;
+
+    cv::Mat* levelToMat(int level);
+    const cv::Mat* levelToMat(int level) const;
 };
 
 template <typename Int, int32_t MAX>
@@ -108,7 +111,7 @@ void createMatC4(cv::Mat& dst, const cv::Mat& src)
     }
     dst.create(src.size(), type);
     multiProcess<Int, MAX, 32>(dst, [&](glm::vec2 uv) {
-        return glm::vec4(_rgb(sample<Int, MAX>(src, uv, SampleUV::Clamp, SamplePoint::Point)), 1.0f);
+        return glm::vec4(_rgb(texelFetch<Int, MAX>(src, uv, SampleUV::Clamp)), 1.0f);
     });
 }
 

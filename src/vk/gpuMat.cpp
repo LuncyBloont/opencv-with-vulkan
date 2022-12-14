@@ -5,7 +5,6 @@
 #include "helper.h"
 #include "imageHelper.h"
 #include "opencv2/core/mat.hpp"
-#include "opencv2/highgui.hpp"
 #include "shader.h"
 #include "vk/vkenv.h"
 #include "vk/vkinfo.h"
@@ -14,6 +13,7 @@
 #include <stdint.h>
 #include <vcruntime_string.h>
 #include <vector>
+#include "glslStyle.hpp"
 
 mltsg::GSampler* mltsg::defaultLinearSampler = nullptr;
 
@@ -28,16 +28,17 @@ void generateMipmaps(const cv::Mat& level0, std::vector<cv::Mat>& mipmaps, uint3
             mltsg::toMipmapSize(level0.cols, i), 
             level0.type());
         const cv::Mat& ref = i == 1 ? level0 : mipmaps[i - 2];
-        glm::vec3 offset = glm::vec3(1.0f / ref.cols, 1.0f / ref.rows, 0.0f);
+        glm::vec2 offset = glm::vec2(-.5f, .5f);
+        glm::vec2 sc = glm::vec2(1.f / ref.cols, 1.f / ref.rows);
         
         if (HDR)
         {
             auto shader = [&](glm::vec2 uv) {
                 return (
-                    mltsg::texelFetch<float, MLTSG_HDR_MAX>(ref, uv + mltsg::_zz(offset)) +
-                    mltsg::texelFetch<float, MLTSG_HDR_MAX>(ref, uv + mltsg::_xz(offset)) + 
-                    mltsg::texelFetch<float, MLTSG_HDR_MAX>(ref, uv + mltsg::_zy(offset)) + 
-                    mltsg::texelFetch<float, MLTSG_HDR_MAX>(ref, uv + mltsg::_xy(offset))
+                    mltsg::sample<float, MLTSG_HDR_MAX>(ref, uv + mltsg::_xx(offset) * sc) +
+                    mltsg::sample<float, MLTSG_HDR_MAX>(ref, uv + mltsg::_xy(offset) * sc) + 
+                    mltsg::sample<float, MLTSG_HDR_MAX>(ref, uv + mltsg::_yy(offset) * sc) + 
+                    mltsg::sample<float, MLTSG_HDR_MAX>(ref, uv + mltsg::_yx(offset) * sc)
                 ) * 0.25f;
             };
             mltsg::process<float, MLTSG_HDR_MAX>(mipmaps[i - 1], shader);
@@ -46,10 +47,10 @@ void generateMipmaps(const cv::Mat& level0, std::vector<cv::Mat>& mipmaps, uint3
         {
             auto shader = [&](glm::vec2 uv) {
                 return (
-                    mltsg::texelFetch<MLTSG_U8>(ref, uv + mltsg::_zz(offset)) +
-                    mltsg::texelFetch<MLTSG_U8>(ref, uv + mltsg::_xz(offset)) + 
-                    mltsg::texelFetch<MLTSG_U8>(ref, uv + mltsg::_zy(offset)) + 
-                    mltsg::texelFetch<MLTSG_U8>(ref, uv + mltsg::_xy(offset))
+                    mltsg::sample<MLTSG_U8>(ref, uv + mltsg::_xx(offset) * sc) +
+                    mltsg::sample<MLTSG_U8>(ref, uv + mltsg::_xy(offset) * sc) + 
+                    mltsg::sample<MLTSG_U8>(ref, uv + mltsg::_yy(offset) * sc) + 
+                    mltsg::sample<MLTSG_U8>(ref, uv + mltsg::_yx(offset) * sc)
                 ) * 0.25f;
             };
             mltsg::process<MLTSG_U8>(mipmaps[i - 1], shader);
@@ -339,4 +340,16 @@ mltsg::GSampler::GSampler(SampleUV uvType, SamplePoint filterType) : uvType(uvTy
 mltsg::GSampler::~GSampler()
 {
     vkDestroySampler(gVkDevice, sampler, MLTSG_GVKALC);
+}
+
+cv::Mat* mltsg::GPUMat::levelToMat(int level)
+{
+    assert(level >= 0 && level < (int)levels);
+    return level == 0 ? cpuData : &mipmaps[level - 1];
+}
+
+const cv::Mat* mltsg::GPUMat::levelToMat(int level) const
+{
+    assert(level >= 0 && level < (int)levels);
+    return level == 0 ? cpuData : &mipmaps[level - 1];
 }

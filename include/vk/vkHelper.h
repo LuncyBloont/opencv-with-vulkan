@@ -69,6 +69,11 @@ inline uint32_t toMipmapSize(uint32_t size, uint32_t level)
 
 void readShader(VkShaderModule& shader, std::string fname);
 
+struct GPUMat;
+
+void showMipmap(const GPUMat* mat);
+void showMipmap(const std::vector<cv::Mat>* maps, bool HDR);
+
 }
 
 #endif
