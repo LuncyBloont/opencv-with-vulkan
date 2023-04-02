@@ -1,4 +1,5 @@
 #include "vk/imageHelper.h"
+#include "vkHelper.h"
 #include "vkenv.h"
 #include "vulkan/vulkan_core.h"
 #include <stdint.h>

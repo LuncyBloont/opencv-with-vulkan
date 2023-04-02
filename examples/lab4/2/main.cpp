@@ -10,6 +10,7 @@
 #include "shader.h"
 #include <iostream>
 #include <string>
+#include "glslStyle.hpp"
 
 #define BTYPE_COLOR 0
 #define BTYPE_ALPHA 1

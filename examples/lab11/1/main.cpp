@@ -73,7 +73,7 @@ void process()
 
     cv::Mat outputTmp { input0.size(), CV_32FC3 };
 
-    for (int i = 0; i < lapC.size(); ++i)
+    for (size_t i = 0; i < lapC.size(); ++i)
     {
         mltsg::multiProcess<MLTSG_HDR, 32>(outputTmp, [&](glm::vec2 uv) {
             if (i == 0)

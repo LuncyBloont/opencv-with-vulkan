@@ -1,5 +1,6 @@
 #include "glslStyle.hpp"
 #include "helper.h"
+#include "shader.h"
 #include <opencv2/opencv.hpp>
 
 const cv::Mat* rawImage;

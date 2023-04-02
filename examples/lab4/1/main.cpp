@@ -1,4 +1,7 @@
 #include <iostream>
+
+#include "glslStyle.hpp"
+#include "helper.h"
 #include "glm/common.hpp"
 #include "glm/fwd.hpp"
 #include "glm/geometric.hpp"

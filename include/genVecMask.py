@@ -1,6 +1,6 @@
 #! /usr/bin/python3
 
-code = '#ifndef CVVK_GLSLSTYLE_HPP\n#define CVVK_GLSLSTYLE_HPP\n#include "glm/glm.hpp"\n'
+code = '#ifndef CVVK_GLSLSTYLE_HPP\n#define CVVK_GLSLSTYLE_HPP\n#include "glm/glm.hpp" // IWYU pragma: keep\n'
 
 def app(s):
     global code

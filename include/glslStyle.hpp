@@ -1,6 +1,6 @@
 #ifndef CVVK_GLSLSTYLE_HPP
 #define CVVK_GLSLSTYLE_HPP
-#include "glm/glm.hpp"
+#include "glm/glm.hpp" // IWYU pragma: keep
 
 namespace mltsg
 {

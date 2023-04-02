@@ -1,4 +1,5 @@
 #include "glm/fwd.hpp"
+#include "glslStyle.hpp"
 #include "gpuMat.h"
 #include "helper.h"
 #include "opencv2/core/hal/interface.h"

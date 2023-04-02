@@ -1,4 +1,7 @@
 #include <iostream>
+
+#include "glslStyle.hpp"
+#include "helper.h"
 #include "glm/detail/qualifier.hpp"
 #include "glm/fwd.hpp"
 #include "opencv2/core/hal/interface.h"

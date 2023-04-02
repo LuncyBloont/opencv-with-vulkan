@@ -1,4 +1,7 @@
 #include <iostream>
+
+#include "glslStyle.hpp"
+#include "helper.h"
 #include "opencv2/core/hal/interface.h"
 #include "opencv2/core/mat.hpp"
 #include "opencv2/highgui.hpp"

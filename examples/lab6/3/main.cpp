@@ -3,8 +3,6 @@
 #include "helper.h"
 #include "opencv2/core/mat.hpp"
 #include "opencv2/highgui.hpp"
-#include "opencv2/imgcodecs.hpp"
-#include "shader.h"
 #include "stage.h"
 #include "vkenv.h"
 

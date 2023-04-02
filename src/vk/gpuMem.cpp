@@ -1,5 +1,6 @@
 #include "vk/gpuMem.h"
 #include "helper.h"
+#include "vkHelper.h"
 #include "vkenv.h"
 #include "vkinfo.h"
 #include "vulkan/vulkan_core.h"

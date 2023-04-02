@@ -1,7 +1,6 @@
 #ifndef CVVK_VK_VKINFO_H
 #define CVVK_VK_VKINFO_H
 
-#include "gpuMem.h"
 #include "helper.h"
 #include "vulkan/vulkan_core.h"
 #include <iostream>

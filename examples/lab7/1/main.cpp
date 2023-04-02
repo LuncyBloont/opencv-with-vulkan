@@ -9,6 +9,8 @@
 #include "vkenv.h"
 #include <stdint.h>
 
+#include "iphelper.hpp"
+
 int main()
 {
     mltsg::initializeVulkan();
@@ -24,7 +26,7 @@ int main()
         cv::Mat histShow;
         histShow.create(hist.rows * 512, hist.cols, CV_8UC4);
 
-        cv::Mat colorRamp = mltsg::equalizeHist<uint8_t, 255>(hist, input);
+        cv::Mat colorRamp = mltsg::equalizeHist<uint8_t, 255>(hist);
         
         cv::Mat colorRampShow;
         colorRampShow.create(hist.rows * 512, hist.cols, CV_8UC4);

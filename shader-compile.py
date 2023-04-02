@@ -3,6 +3,8 @@ from genericpath import isdir
 import os
 import re
 import time
+import tkinter.messagebox as tkbox
+import tkinter as tk
 
 compiler_path = 'Path to glslc'
 
@@ -55,8 +57,11 @@ def compile(path: str):
 
     if result != 0:
         print('Failed to compile...')
-        print('\n----------ENTER---!!!!!!!!!!!!!---ENTER------------\a')
-        input()
+        top = tk.Tk()
+        top.attributes('-topmost', 1)
+        top.geometry('0x0+1000000+10000')
+        tkbox.showerror('Multi Stage', 'Shader compile error', )
+        top.destroy()
 
     print('Done\n')
 

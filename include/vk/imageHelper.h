@@ -2,7 +2,6 @@
 #define CVVK_VK_IMAGE_HELPER_H
 
 #include "gpuBuf.h"
-#include "vkenv.h"
 #include "vulkan/vulkan_core.h"
 #include <cassert>
 

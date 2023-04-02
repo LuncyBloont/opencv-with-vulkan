@@ -8,7 +8,6 @@
 #include <stdexcept>
 #include <stdint.h>
 #include <vulkan/vulkan.h>
-#include "vkHelper.h"
 
 namespace mltsg 
 {
@@ -32,7 +31,6 @@ private:
         bool operator<(const MemSeg& other) const;
     };
 
-private:
     VkDeviceMemory memory;
     std::set<MemSeg> used;
     VkDeviceSize size;
@@ -65,7 +63,7 @@ struct GPUPtr
 template <uint32_t Count>
 struct GPUMemsArray
 {
-    GPUMem* arr[Count] = { nullptr };
+    std::array<GPUMem*, Count> arr = {};
     const uint32_t count = Count;
 
     const char* name;
