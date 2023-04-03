@@ -60,6 +60,9 @@ void test_multi_images()
         {
             std::string id_str = std::to_string(i);
             const std::string fname = "GT" + ((i < 10 ? "0" : "") + std::to_string(i)) + ".png";
+
+            float buildTime = 0.0f;
+            float upsampleTime = 0.0f;
         
             cv::Mat input = cv::imread(assetsDir + "/" + fname);
             cv::imwrite(outputDir + "/" + id_str + "_raw.png", input);
@@ -99,40 +102,36 @@ void test_multi_images()
 
             inputTex0.apply();
             
-            clock_t beg = clock();
             downsampleStage.render(1);
-            clock_t dur0 = clock() - beg;
+            buildTime += downsampleStage.realFrameTime();
             
             downsampleStage.getGPUMat()->apply();
 
-            beg = clock();
             indexWeightStage.render(1);
-            dur0 += clock() - beg;
+            buildTime += indexWeightStage.realFrameTime();
             
             indexWeightStage.getGPUMat()->apply();
             
-            std::cout << fname << ": build time " << (float(dur0) * 1000.0f / CLOCKS_PER_SEC) << "ms" << std::endl;
+            std::cout << fname << ": build time " << buildTime * 1000.0f << "ms" << std::endl;
         
             equalizeHistColor(post, *downsampleStage.getGPUMat()->cpuData);
 
             postTex.apply();
             
-            beg = clock();
             upsampleStage.render(1);
-            clock_t dur1 = clock() - beg;
+            upsampleTime += upsampleStage.realFrameTime();
             
             upsampleStage.getGPUMat()->apply();
             
-            std::cout << fname << ": upsample time " << (float(dur1) * 1000.0f / CLOCKS_PER_SEC) << "ms" << std::endl;
+            std::cout << fname << ": upsample time " << upsampleTime * 1000.0f << "ms" << std::endl;
 
             cv::imwrite(outputDir + "/" + id_str + "_post_upsample.png", *upsampleStage.getGPUMat()->cpuData);
             std::cout << "complete: " << fname << std::endl;
 
-            md_out << "| " << fname << " | " << (float(dur0) * 1000.0f / CLOCKS_PER_SEC) << "ms | " <<
-                (float(dur1) * 1000.0f / CLOCKS_PER_SEC) << "ms |\n";
+            md_out << "| " << fname << " | " << buildTime * 1000.0f << "ms | " << upsampleTime * 1000.0f << "ms |\n";
 
-            timeAll0 += (float(dur0) * 1000.0f / CLOCKS_PER_SEC);
-            timeAll1 += (float(dur1) * 1000.0f / CLOCKS_PER_SEC);
+            timeAll0 += buildTime * 1000.0f;
+            timeAll1 += upsampleTime * 1000.0f;
         }
         mltsg::cleanupVulkan();
     }

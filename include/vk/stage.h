@@ -107,6 +107,9 @@ private:
 
     std::string tag;
 
+    float frameTime_self = 0.0f;
+    float frameTime_all = 0.0f;
+
 public:
 
     explicit Stage(uint32_t width, uint32_t height, StageProperties* assets, bool HDR = false);
@@ -131,6 +134,9 @@ public:
 
     GPUMat* getGPUMat();
     const GPUMat* getGPUMat() const;
+
+    float realFrameTime() const;
+    float treeFrameTime() const;
 
 private:
     void createShader();
