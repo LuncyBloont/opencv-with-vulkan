@@ -16,8 +16,8 @@
 namespace mltsg 
 {
 
-#define MLTSG_READ_MAT true
-#define MLTSG_WRITE_MAT false
+#define MLTSG_READ_MAT 0
+#define MLTSG_WRITE_MAT 1
 #define MLTSG_USE_SRGB true
 #define MLTSG_USE_RAW false
 
@@ -57,7 +57,7 @@ struct GPUMat
 
     VkFormat format;
     
-    explicit GPUMat(cv::Mat* mat, bool readable = MLTSG_READ_MAT, bool genMip = true, bool srgb = MLTSG_USE_RAW, bool HDR = false);
+    explicit GPUMat(cv::Mat* mat, int readable = MLTSG_READ_MAT, bool genMip = true, bool srgb = MLTSG_USE_RAW, bool HDR = false);
     virtual ~GPUMat();
 
     void apply();

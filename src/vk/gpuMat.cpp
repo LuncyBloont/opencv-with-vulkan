@@ -58,7 +58,7 @@ void generateMipmaps(const cv::Mat& level0, std::vector<cv::Mat>& mipmaps, uint3
     }
 }
 
-mltsg::GPUMat::GPUMat(cv::Mat* mat, bool readable, bool genMip , bool srgb, bool HDR) : 
+mltsg::GPUMat::GPUMat(cv::Mat* mat, int readable, bool genMip , bool srgb, bool HDR) : 
     cpuData(mat), readable(readable), srgb(srgb), HDR(HDR)
 {
     assertVkEnv;

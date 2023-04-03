@@ -3,7 +3,7 @@ project(ImageProcessing VERSION 0.1.0)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-set(DEBUG "On")
+set(DEBUG "Off")
 
 include(CTest)
 enable_testing()
@@ -17,9 +17,7 @@ endif()
 
 file(GLOB_RECURSE SRC "./src/**.cpp")
 file(GLOB_RECURSE HDR "./include/**.hpp" "./include/**.h")
-
-message("source: " ${SRC})
-message("headers: " ${HDR})
+file(GLOB_RECURSE SDR "./shaderLib/**.glsl" "./shaders/**.frag" "./shaders/**.vert", "./defaultVS/**.vert")
 
 file(GLOB_RECURSE mains ./examples/*/*/main.cpp)
 
@@ -30,7 +28,7 @@ include("./libconfig/library.cmake")
 foreach(file IN LISTS mains)
     string(REGEX REPLACE "(.*)\\/([^\\/]+)\\/([^\\/]+)\\/([^\\/]+\\.cpp)$" "example_\\2_\\3" build_item ${file})
     message(${build_item})
-    add_executable(${build_item} ${file} ${SRC} ${HDR})
+    add_executable(${build_item} ${file} ${SRC} ${HDR} ${SDR})
 
     target_include_directories(
         ${build_item}
@@ -50,6 +48,12 @@ foreach(file IN LISTS mains)
         ${build_item}
         PRIVATE
         ${TPLIBS}
+    )
+    
+    set_target_properties(
+        ${build_item}
+        PROPERTIES
+        RESOURCE "shaderLib/templateEnd.frag.glsl"
     )
 endforeach()
 

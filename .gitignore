@@ -3,6 +3,7 @@
 *.bmp~
 /.cache
 /.vscode
+/.idea
 /build*
 /*build
 /test
