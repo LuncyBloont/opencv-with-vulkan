@@ -51,6 +51,8 @@ void test_multi_images()
     md_out << "| file | build | upsample | \n";
     md_out << "| --- | --- | --- |\n";
 
+    std::ofstream data_out{outputDir + "/" + "test.txt"};
+
     float timeAll0 = 0.0f;
     float timeAll1 = 0.0f;
 
@@ -129,6 +131,7 @@ void test_multi_images()
             std::cout << "complete: " << fname << std::endl;
 
             md_out << "| " << fname << " | " << buildTime * 1000.0f << "ms | " << upsampleTime * 1000.0f << "ms |\n";
+            data_out << input.cols * input.rows << " " << buildTime * 1000.0f << " " << upsampleTime * 1000.0f << "\n";
 
             timeAll0 += buildTime * 1000.0f;
             timeAll1 += upsampleTime * 1000.0f;
@@ -139,6 +142,7 @@ void test_multi_images()
     md_out << "| AVG | " << (timeAll0 / (end + 1 - start)) << " | " << (timeAll1 / (end + 1 - start)) << " |\n";
     
     md_out.close();
+    data_out.close();
 }
 
 int main()
