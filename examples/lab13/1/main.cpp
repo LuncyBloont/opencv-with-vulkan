@@ -41,8 +41,8 @@ void equalizeHistColor(cv::Mat& dst, cv::Mat& src)
 
 void test_multi_images()
 {
-    const std::string assetsDir = "F:/CGCV/input_training_highres/input_training_highres";
-    const std::string outputDir = "F:/CGCV/input_training_highres/tmp";
+    const std::string assetsDir = "D:/tmp/input_training_highres/input_training_highres";
+    const std::string outputDir = "D:/tmp/input_training_highres/tmp";
     constexpr int start = 1;
     constexpr int end = 32;
     constexpr int downsample = 8;
@@ -201,7 +201,7 @@ int main()
 
         upsampleStage.render(1);
         upsampleStage.applyAndShow("upsample");
-        cv::imwrite("F:/tmp/a.png", *upsampleStage.getGPUMat()->cpuData);
+        cv::imwrite("D:/tmp/a.png", *upsampleStage.getGPUMat()->cpuData);
         cv::waitKey();
     }
     mltsg::cleanupVulkan();
