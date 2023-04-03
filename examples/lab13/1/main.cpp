@@ -51,6 +51,9 @@ void test_multi_images()
     md_out << "| file | build | upsample | \n";
     md_out << "| --- | --- | --- |\n";
 
+    float timeAll0 = 0.0f;
+    float timeAll1 = 0.0f;
+
     for (int i = start; i <= end; ++i)
     {
         mltsg::initializeVulkan();
@@ -127,9 +130,15 @@ void test_multi_images()
 
             md_out << "| " << fname << " | " << (float(dur0) * 1000.0f / CLOCKS_PER_SEC) << "ms | " <<
                 (float(dur1) * 1000.0f / CLOCKS_PER_SEC) << "ms |\n";
+
+            timeAll0 += (float(dur0) * 1000.0f / CLOCKS_PER_SEC);
+            timeAll1 += (float(dur1) * 1000.0f / CLOCKS_PER_SEC);
         }
         mltsg::cleanupVulkan();
     }
+
+    md_out << "| AVG | " << (timeAll0 / (end + 1 - start)) << " | " << (timeAll1 / (end + 1 - start)) << " |\n";
+    
     md_out.close();
 }
 
