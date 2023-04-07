@@ -16,10 +16,10 @@ void mltsg::markTime()
     markedTime = clock();
 }
 
-float mltsg::endMark(const char* msg)
+float mltsg::endMark(const char* msg, float scale)
 {
     clock_t t = clock();
-    float dur = (t - markedTime) * 1.0f / CLOCKS_PER_SEC;
+    float dur = (t - markedTime) * scale / CLOCKS_PER_SEC;
     
     if (msg[0] != 0)
     {
@@ -27,7 +27,7 @@ float mltsg::endMark(const char* msg)
     
     }
     markedTime = clock();
-    return dur + 0.00001f;
+    return dur + 0.00001f * scale;
 }
 
 float mltsg::areaOfTriangle(glm::vec2 A, glm::vec2 B, glm::vec2 C)

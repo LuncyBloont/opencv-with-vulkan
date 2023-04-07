@@ -45,7 +45,7 @@ int main()
 
     cv::namedWindow("Output");
 
-    float trackMax = image.cols;
+    float trackMax = (float)image.cols;
 
     UserData0 data0 = UserData0{ &image, &output, trackMax };
 

@@ -3,27 +3,21 @@ project(ImageProcessing VERSION 0.1.0)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-set(DEBUG "Off")
-
-include(CTest)
-enable_testing()
-
-if(DEBUG)
-    set(CMAKE_BUILD_TYPE "Debug")
-    add_definitions(-DDEBUG)
-else()
-    set(CMAKE_BUILD_TYPE "Release") # 加速编译
-endif()
-
 file(GLOB_RECURSE SRC "./src/**.cpp")
 file(GLOB_RECURSE HDR "./include/**.hpp" "./include/**.h")
-file(GLOB_RECURSE SDR "./shaderLib/**.glsl" "./shaders/**.frag" "./shaders/**.vert", "./defaultVS/**.vert")
+file(GLOB_RECURSE SDR "./shaderLib/**.glsl" "./shaders/**.frag" "./shaders/**.vert" "./defaultVS/**.vert")
 
 file(GLOB_RECURSE mains ./examples/*/*/main.cpp)
 
-include("./libconfig/includeDirs.cmake")
-include("./libconfig/libraryDirs.cmake")
-include("./libconfig/library.cmake")
+file(STRINGS "./libconfig/includeDirs.txt" USER_INCLUDE_DIR)
+file(STRINGS "./libconfig/libraryDirs.txt" USER_LIB_DIR)
+file(STRINGS "./libconfig/dllCopy.txt" USER_DLL)
+
+message(${USER_LIB_DIR})
+
+link_directories(
+    ${USER_LIB_DIR}
+)
 
 foreach(file IN LISTS mains)
     string(REGEX REPLACE "(.*)\\/([^\\/]+)\\/([^\\/]+)\\/([^\\/]+\\.cpp)$" "example_\\2_\\3" build_item ${file})
@@ -32,32 +26,22 @@ foreach(file IN LISTS mains)
 
     target_include_directories(
         ${build_item}
+        ${USER_INCLUDE_DIR}
         PRIVATE
         "./include/"
         "./include/vk"
-        ${TPINCDIR}
-    )
-    
-    target_link_directories(
-        ${build_item}
-        PRIVATE
-        ${TPLIBDIR}
     )
     
     target_link_libraries(
         ${build_item}
         PRIVATE
-        ${TPLIBS}
-    )
-    
-    set_target_properties(
-        ${build_item}
-        PROPERTIES
-        RESOURCE "shaderLib/templateEnd.frag.glsl"
+        optimized opencv_world460
+        debug opencv_world460d
+        general vulkan-1
     )
 endforeach()
 
-file(COPY ${DLLS} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+file(COPY ${USER_DLL} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})

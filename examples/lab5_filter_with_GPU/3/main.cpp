@@ -14,7 +14,7 @@ int main(int argc, char** argv)
 {
     if (argc < 4)
     {
-        LogErr("At least 2 params (input, output)\n");
+        LogErr("At least 3 params (input, output, shader)\n");
         return -1;
     }
 

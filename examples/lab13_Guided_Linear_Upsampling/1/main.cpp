@@ -48,10 +48,12 @@ void test_multi_images()
     constexpr int downsample = 8;
 
     std::ofstream md_out{outputDir + "/" + "test.md"};
-    md_out << "| file | build | upsample | \n";
-    md_out << "| --- | --- | --- |\n";
-
+    md_out << "| file | build | upsample | equalize hists reference time | equalize hists small image time |\n";
+    md_out << "| --- | --- | --- | --- | --- |\n";
+    
     std::ofstream data_out{outputDir + "/" + "test.txt"};
+    
+    std::ofstream filter_time_out{outputDir + "/" + "filter_time.txt"};
 
     float timeAll0 = 0.0f;
     float timeAll1 = 0.0f;
@@ -65,9 +67,11 @@ void test_multi_images()
 
             float buildTime = 0.0f;
             float upsampleTime = 0.0f;
+
+            const auto&& packName = [&](const std::string& name) { return outputDir + "/" + id_str + name; };
         
             cv::Mat input = cv::imread(assetsDir + "/" + fname);
-            cv::imwrite(outputDir + "/" + id_str + "_raw.png", input);
+            cv::imwrite(packName("_raw.png"), input);
             mltsg::GPUMat inputTex0{&input, MLTSG_READ_MAT, false};
         
             const uint32_t sWidth = (inputTex0.width() + downsample - 1) / downsample;
@@ -75,6 +79,13 @@ void test_multi_images()
         
             cv::Mat post{cv::Size(int(sWidth), int(sHeight)), input.type()};
             mltsg::GPUMat postTex{&post, MLTSG_READ_MAT, false};
+
+            cv::Mat post_ref{input.size(), input.type()};
+            mltsg::markTime();
+            equalizeHistColor(post_ref, input);
+            float refTime = mltsg::endMark("", 1000.0f);
+
+            cv::imwrite(packName("_reference.png"), post_ref);
         
             mltsg::StageProperties downsampleAssets{
                 {}, {&inputTex0}, {},
@@ -108,15 +119,31 @@ void test_multi_images()
             buildTime += downsampleStage.realFrameTime();
             
             downsampleStage.getGPUMat()->apply();
+            cv::imwrite(packName("_small.png"), *downsampleStage.getGPUMat()->cpuData);
 
             indexWeightStage.render(1);
             buildTime += indexWeightStage.realFrameTime();
             
             indexWeightStage.getGPUMat()->apply();
+            cv::Mat cRGBA[4] =
+            {
+                {indexWeightStage.getGPUMat()->cpuData->size(), CV_8UC1},
+                {indexWeightStage.getGPUMat()->cpuData->size(), CV_8UC1},
+                {indexWeightStage.getGPUMat()->cpuData->size(), CV_8UC1},
+                {indexWeightStage.getGPUMat()->cpuData->size(), CV_8UC1}
+            };
+            cv::split(*indexWeightStage.getGPUMat()->cpuData, cRGBA);
+            cv::imwrite(packName("_upsample_ref_R.png"), cRGBA[0]);
+            cv::imwrite(packName("_upsample_ref_G.png"), cRGBA[1]);
+            cv::imwrite(packName("_upsample_ref_B.png"), cRGBA[2]);
+            cv::imwrite(packName("_upsample_ref_A.png"), cRGBA[3]);
             
             std::cout << fname << ": build time " << buildTime * 1000.0f << "ms" << std::endl;
-        
+
+            mltsg::markTime();
             equalizeHistColor(post, *downsampleStage.getGPUMat()->cpuData);
+            float smallTime = mltsg::endMark("", 1000.0f);
+            cv::imwrite(packName("_post.png"), post);
 
             postTex.apply();
             
@@ -127,11 +154,15 @@ void test_multi_images()
             
             std::cout << fname << ": upsample time " << upsampleTime * 1000.0f << "ms" << std::endl;
 
-            cv::imwrite(outputDir + "/" + id_str + "_post_upsample.png", *upsampleStage.getGPUMat()->cpuData);
+            cv::imwrite(packName("_post_upsample.png"), *upsampleStage.getGPUMat()->cpuData);
             std::cout << "complete: " << fname << std::endl;
 
-            md_out << "| " << fname << " | " << buildTime * 1000.0f << "ms | " << upsampleTime * 1000.0f << "ms |\n";
+            md_out << "| " << fname << " | " << buildTime * 1000.0f << "ms | " << upsampleTime * 1000.0f << "ms | " <<
+                refTime << "ms | " << smallTime << "ms |\n";
+            
             data_out << input.cols * input.rows << " " << buildTime * 1000.0f << " " << upsampleTime * 1000.0f << "\n";
+            
+            filter_time_out << input.cols * input.rows << " " << refTime << " " << smallTime << "\n";
 
             timeAll0 += buildTime * 1000.0f;
             timeAll1 += upsampleTime * 1000.0f;
@@ -139,10 +170,11 @@ void test_multi_images()
         mltsg::cleanupVulkan();
     }
 
-    md_out << "| AVG | " << (timeAll0 / (end + 1 - start)) << " | " << (timeAll1 / (end + 1 - start)) << " |\n";
+    md_out << "| AVG | " << (timeAll0 / (end + 1 - start)) << "ms | " << (timeAll1 / (end + 1 - start)) << "ms |\n";
     
     md_out.close();
     data_out.close();
+    filter_time_out.close();
 }
 
 int main()

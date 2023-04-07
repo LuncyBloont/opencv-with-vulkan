@@ -10,9 +10,8 @@
 #include "shader.h"
 #include "stage.h"
 #include "vkenv.h"
-#include <tuple>
 
-#define PATH "../images/p0.jpg"
+#define PATH "../images/Duk-noise.jpg"
 using namespace glm;
 
 int main()
@@ -24,13 +23,13 @@ int main()
         tex0.apply();
 
         float sigmaSpace = 6.0f;
-        float sigmaColor = 65.0f;
-        int size = 32;
+        float sigmaColor = 35.0f;
+        int half_size = 32;
 
         cv::Mat input1 = cv::imread(PATH);
         cv::Mat bFilterCV;
         bFilterCV.create(input1.size(), input1.type());
-        cv::bilateralFilter(input1, bFilterCV, size, sigmaColor, sigmaSpace);
+        cv::bilateralFilter(input1, bFilterCV, half_size, sigmaColor, sigmaSpace);
         cv::imshow("Output1", bFilterCV);
         mltsg::endMark("cv::bilateralFilter spend: %fs\n");
 
@@ -38,10 +37,10 @@ int main()
         output1.create(input1.size(), input1.type());
 
         cv::Mat spaceWeight;
-        spaceWeight.create(size + 1, size + 1, CV_32SC1);
-        for (int i = 0; i <= size; ++i)
+        spaceWeight.create(half_size + 1, half_size + 1, CV_32SC1);
+        for (int i = 0; i <= half_size; ++i)
         {
-            for (int j = 0; j <= size; ++j)
+            for (int j = 0; j <= half_size; ++j)
             {
                 vec2 spUVOff = vec2(i, j);
                 spaceWeight.ptr<float>(i, j)[0] = exp(-dot(spUVOff, spUVOff) / 2.0f / pow(sigmaSpace, 2.0f));
@@ -55,14 +54,14 @@ int main()
         }
 
         mltsg::markTime();
-        mltsg::multiProcess<MLTSG_U8, 32>(output1, [&](glm::vec2 uv)
+        mltsg::multiProcess<MLTSG_U8, 64>(output1, [&](glm::vec2 uv)
         {
             vec3 col = mltsg::_rgb(mltsg::texelFetch<MLTSG_U8>(input1, uv));
             vec3 sumCol = vec3(0.0f);
             float sumFac = 0.0f;
-            for (float i = -float(size); i <= float(size); i += 1.0f)
+            for (float i = -float(half_size); i <= float(half_size); i += 1.0f)
             {
-                for (float j = -float(size); j <= float(size); j += 1.0f)
+                for (float j = -float(half_size); j <= float(half_size); j += 1.0f)
                 {
                     vec2 spUVOff = vec2(i, j);
                     vec3 spCol = mltsg::_rgb(mltsg::texelFetch<MLTSG_U8>(input1, uv + spUVOff / vec2(input1.cols, input1.rows)));
@@ -78,13 +77,13 @@ int main()
 
             return vec4(sumCol / sumFac, 1.0f);
         });
-        mltsg::endMark("Bilateral filter spend: %fs\n");
+        mltsg::endMark("Bilateral filter spend: %fms\n", 1000.0f);
         cv::imshow("Output0", output1);
 
         mltsg::StageProperties assets {
             {}, { &tex0 }, {}, 
             {
-                glm::vec4(6.0f, 65.0f, 1.0f, 16.0f) // { sigmaSpace, sigmaColor } 
+                glm::vec4(sigmaSpace, sigmaColor, 1.0f, 16.0f) // { sigmaSpace, sigmaColor } 
             },
             "../shaders/bilateralFilter.spv"
         };
@@ -135,7 +134,7 @@ int main()
             age += 1;
         }
 
-        mltsg::Log("bilateralFilter with vulkan spend: %fs\n", 1.0f / avgFPS);
+        mltsg::Log("bilateralFilter with vulkan spend: %fms\n", 1000.0f / avgFPS);
 
     }
     mltsg::cleanupVulkan();

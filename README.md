@@ -8,50 +8,27 @@ A digital image process lab with these silutions:
 # library config
 
 Create these files:
-* ./libconfig/includeDirs.cmake
-* ./libconfig/libraryDirs.cmake
-* ./libconfig/library.cmake
+* ./libconfig/includeDirs.txt
+* ./libconfig/libraryDirs.txt
+* ./libconfig/dllCopy.txt
 
 ## e.g.
-./libconfig/includeDirs.cmake
+./libconfig/includeDirs.txt
 ```
-set(
-    TPINCDIR
-    "C:/VulkanSDK/1.3.224.1/Include/"
-    "C:/OpenCV/opencv/build/include/"
-)
+PRIVATE
+C:/VulkanSDK/1.3.224.1/Include/
+C:/OpenCV/opencv/build/include/
 ```
 
-./libconfig/libraryDirs.cmake
+./libconfig/libraryDirs.txt
 ```
-set(
-    TPLIBDIR
-    "C:/VulkanSDK/1.3.224.1/Lib/"
-    "C:/OpenCV/opencv/build/x64/vc15/lib/"
-)
-
-set(
-    DLLS
-    "C:/OpenCV/opencv/build/x64/vc15/bin/opencv_world460.dll"
-    "C:/OpenCV/opencv/build/x64/vc15/bin/opencv_world460d.dll"
-    "C:/OpenCV/opencv/build/x64/vc15/bin/opencv_videoio_ffmpeg460_64.dll"
-)
+C:/VulkanSDK/1.3.224.1/Lib/
+C:/OpenCV/opencv/build/x64/vc15/lib/
 ```
 
-./libconfig/library.cmake
+./libconfig/dllCopy.txt
 ```
-if(DEBUG)
-    set(
-        TPLIBS
-        opencv_world460d.lib
-        vulkan-1.lib
-    )
-else()
-    set(
-        TPLIBS
-        opencv_world460.lib
-        vulkan-1.lib
-    )
-endif()
+C:/OpenCV/opencv/build/x64/vc15/bin/opencv_world460.dll
+C:/OpenCV/opencv/build/x64/vc15/bin/opencv_world460d.dll
+C:/OpenCV/opencv/build/x64/vc15/bin/opencv_videoio_ffmpeg460_64.dll
 ```
-

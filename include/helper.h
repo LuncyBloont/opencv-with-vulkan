@@ -23,7 +23,7 @@ namespace mltsg
 } while(0)
 
 void markTime();
-float endMark(const char* msg);
+float endMark(const char* msg, float scale = 1.0f);
 
 float areaOfTriangle(glm::vec2 A, glm::vec2 B, glm::vec2 C);
 float disToLine(glm::vec2 p, glm::vec2 A, glm::vec2 B);
@@ -84,7 +84,7 @@ extern const _MLTSG_Log_Type_ LogErr;
 extern const _MLTSG_Log_Type_ LogWarn;
 extern const _MLTSG_Log_Type_ _MLTSG_LogDB;
 
-#ifdef DEBUG 
+#ifndef NDEBUG 
 #define MLTSG_LogDB(...) _MLTSG_LogDB(__VA_ARGS__)
 #else
 #define MLTSG_LogDB(...)
