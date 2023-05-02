@@ -9,6 +9,7 @@
 #include <stdint.h>
 #include <string>
 #include <glm/glm.hpp>
+#include <chrono>
 
 namespace mltsg 
 {
@@ -123,6 +124,16 @@ template <typename T>
 bool inBound(T x, T y, T w, T h, T zw = 0.f, T zh = 0.f)
 {
     return x < w && y < h && x >= zw && y >= zh;
+}
+
+inline float markTimeX()
+{
+    static auto pre = std::chrono::system_clock::now();
+    const auto now = std::chrono::system_clock::now();
+
+    const auto dur = std::chrono::duration<float, std::chrono::milliseconds::period>(now - pre);
+    pre = now;
+    return dur.count();
 }
 
 }

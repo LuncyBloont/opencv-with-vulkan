@@ -228,6 +228,7 @@ void mltsg::GPUMat::apply()
 {
     makeValid();
 
+    markTimeX();
     generateMipmaps(*cpuData, mipmaps, levels, HDR);
 
     if (readable == MLTSG_READ_MAT)
@@ -265,6 +266,8 @@ void mltsg::GPUMat::apply()
         imageReadFromGPUBuffer->unmapMem();
         
     }
+
+    applyTime = markTimeX();
 }
 
 void mltsg::GPUMat::peek(void (*func)(GPUMat* self, void* userData), void* data)

@@ -3,6 +3,8 @@ project(ImageProcessing VERSION 0.1.0)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+set(CMAKE_BUILD_TYPE Release)
+
 file(GLOB_RECURSE SRC "./src/**.cpp")
 file(GLOB_RECURSE HDR "./include/**.hpp" "./include/**.h")
 file(GLOB_RECURSE SDR "./shaderLib/**.glsl" "./shaders/**.frag" "./shaders/**.vert" "./defaultVS/**.vert")
@@ -22,7 +24,7 @@ link_directories(
 foreach(file IN LISTS mains)
     string(REGEX REPLACE "(.*)\\/([^\\/]+)\\/([^\\/]+)\\/([^\\/]+\\.cpp)$" "example_\\2_\\3" build_item ${file})
     message(${build_item})
-    add_executable(${build_item} ${file} ${SRC} ${HDR} ${SDR})
+    add_executable(${build_item} ${file} ${SRC} ${HDR})
 
     target_include_directories(
         ${build_item}

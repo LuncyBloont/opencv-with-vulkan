@@ -55,6 +55,7 @@ struct GPUMat
     bool HDR;
     uint32_t showAge = 0;
 
+    float applyTime = 0.0f;
     VkFormat format;
     
     explicit GPUMat(cv::Mat* mat, int readable = MLTSG_READ_MAT, bool genMip = true, bool srgb = MLTSG_USE_RAW, bool HDR = false);

@@ -40,7 +40,7 @@ struct StageProperties
         MLTSG_REFERENCE_COUNT + MLTSG_TEXTURES_COUNT + 2: { mouseX, mouseY, mouseLBT, mouseRBT }
     */
 
-    const std::string shaderPath;
+    std::string shaderPath;
     
     const std::string customVertexShader = "../defaultVS/screenRect.spv";
 };

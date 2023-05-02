@@ -90,7 +90,7 @@ mltsg::Stage::~Stage()
 
 void mltsg::Stage::render(uint32_t newAge)
 {
-    clock_t beg0 = clock();
+    markTimeX();
 
     if (age >= newAge)
     {
@@ -137,13 +137,11 @@ void mltsg::Stage::render(uint32_t newAge)
 
     vkCmdEndRenderPass(cmd);
 
-    clock_t beg1 = clock();
+    float timeSeg1 = markTimeX();
+
     endCommandOnce(cmd, fence);
 
     vkWaitForFences(gVkDevice, 1, &fence, true, 0);
-
-    frameTime_all = float(clock() - beg0) / CLOCKS_PER_SEC;
-    frameTime_self = float(clock() - beg1) / CLOCKS_PER_SEC;
 
     transitionImageLayout(mirror->image, mirror->format, 0, {
         VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
@@ -158,6 +156,11 @@ void mltsg::Stage::render(uint32_t newAge)
         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
         VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
     });
+
+    float timeSeg2 = markTimeX();
+
+    frameTime_all = timeSeg2 + timeSeg1;
+    frameTime_self = timeSeg2;
     
     MLTSG_LogDB("%s render complete at Age(\t%d\t)\n", tag.c_str(), newAge);
 }

@@ -138,7 +138,7 @@ void test_multi_images()
             cv::imwrite(packName("_upsample_ref_B.png"), cRGBA[2]);
             cv::imwrite(packName("_upsample_ref_A.png"), cRGBA[3]);
             
-            std::cout << fname << ": build time " << buildTime * 1000.0f << "ms" << std::endl;
+            std::cout << fname << ": build time " << buildTime << "ms" << std::endl;
 
             mltsg::markTime();
             equalizeHistColor(post, *downsampleStage.getGPUMat()->cpuData);
@@ -152,20 +152,20 @@ void test_multi_images()
             
             upsampleStage.getGPUMat()->apply();
             
-            std::cout << fname << ": upsample time " << upsampleTime * 1000.0f << "ms" << std::endl;
+            std::cout << fname << ": upsample time " << upsampleTime << "ms" << std::endl;
 
             cv::imwrite(packName("_post_upsample.png"), *upsampleStage.getGPUMat()->cpuData);
             std::cout << "complete: " << fname << std::endl;
 
-            md_out << "| " << fname << " | " << buildTime * 1000.0f << "ms | " << upsampleTime * 1000.0f << "ms | " <<
+            md_out << "| " << fname << " | " << buildTime << "ms | " << upsampleTime << "ms | " <<
                 refTime << "ms | " << smallTime << "ms |\n";
             
-            data_out << input.cols * input.rows << " " << buildTime * 1000.0f << " " << upsampleTime * 1000.0f << "\n";
+            data_out << input.cols * input.rows << " " << buildTime << " " << upsampleTime << "\n";
             
             filter_time_out << input.cols * input.rows << " " << refTime << " " << smallTime << "\n";
 
-            timeAll0 += buildTime * 1000.0f;
-            timeAll1 += upsampleTime * 1000.0f;
+            timeAll0 += buildTime;
+            timeAll1 += upsampleTime;
         }
         mltsg::cleanupVulkan();
     }
