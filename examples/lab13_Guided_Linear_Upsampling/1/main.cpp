@@ -1,7 +1,7 @@
 #include "gpuMat.h"
 #include "helper.h"
 #include "stage.h"
-#include "opencv2/opencv.hpp"
+#include <opencv2/opencv.hpp>
 #include <fstream>
 
 void equalizeHistColor(cv::Mat& dst, cv::Mat& src)
@@ -97,7 +97,7 @@ void test_multi_images()
             mltsg::Stage downsampleStage{sWidth, sHeight, &downsampleAssets};
 
             mltsg::StageProperties calIndexWeightAssets{
-                {}, {&inputTex0}, {},
+                {&downsampleStage}, {&inputTex0}, {},
                 {
                     glm::vec4(inputTex0.width(), inputTex0.height(), downsample, 0.0f),
                     glm::vec4(sWidth, sHeight, downsample / 2, 0.0f)
@@ -114,15 +114,13 @@ void test_multi_images()
             mltsg::Stage upsampleStage{inputTex0.width(), inputTex0.height(), &upsampleAssets};
 
             inputTex0.apply();
-            
-            downsampleStage.render(1);
+
+            indexWeightStage.render(1);
             buildTime += downsampleStage.realFrameTime();
+            buildTime += indexWeightStage.realFrameTime();
             
             downsampleStage.getGPUMat()->apply();
             cv::imwrite(packName("_small.png"), *downsampleStage.getGPUMat()->cpuData);
-
-            indexWeightStage.render(1);
-            buildTime += indexWeightStage.realFrameTime();
             
             indexWeightStage.getGPUMat()->apply();
             cv::Mat cRGBA[4] =
@@ -206,13 +204,9 @@ int main()
     
         mltsg::Stage downsampleStage{sWidth, sHeight, &downsampleAssets};
 
-        downsampleStage.render(1);
-        downsampleStage.applyAndShow("downsample");
-        cv::waitKey();
-
         // build index and weight
         mltsg::StageProperties calIndexWeightAssets{
-            {}, {&inputTex0}, {},
+            {&downsampleStage}, {&inputTex0}, {},
             {
                 glm::vec4(inputTex0.width(), inputTex0.height(), downsample, 0.0f),
                 glm::vec4(sWidth, sHeight, downsample / 2, 0.0f)
@@ -223,6 +217,7 @@ int main()
         mltsg::Stage indexWeightStage{inputTex0.width(), inputTex0.height(), &calIndexWeightAssets};
 
         indexWeightStage.render(1);
+        downsampleStage.applyAndShow("downsample");
         indexWeightStage.applyAndShow("index and weight");
         cv::waitKey();
 

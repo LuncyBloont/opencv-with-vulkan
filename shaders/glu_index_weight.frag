@@ -7,9 +7,9 @@
 void _frag(in vec4 fragCoord, out vec4 fragColor)
 {
     const ivec2 pos = ivec2(fragCoord.xy * _vecLib[0].xy);
-    const ivec2 root = ivec2(ivec2(pos / _vecLib[0].z) * _vecLib[0].z + _vecLib[1].z);
+    const ivec2 root = ivec2(pos / _vecLib[0].z);
     
-    // fragColor = texelFetch(_tex0, root, 0);
+    // fragColor = texelFetch(_ref0, root, 0);
     // return;
 
     const int offsetX[] = {-1, 0, 1, -1, 0, 1, -1, 0, 1};
@@ -25,8 +25,8 @@ void _frag(in vec4 fragCoord, out vec4 fragColor)
     
     for (uint i = 0; i < 9; ++i)
     {
-        const ivec2 cpos = clamp(ivec2(offsetX[i] * _vecLib[0].z, offsetY[i] * _vecLib[0].z) + root, ivec2(0), ivec2(_vecLib[0].xy));
-        near[i] = texelFetch(_tex0, cpos, 0);
+        const ivec2 cpos = ivec2(offsetX[i], offsetY[i]) + root;
+        near[i] = texelFetch(_ref0, cpos, 0);
     }
     
     for (uint i = 0; i < 9; ++i)
@@ -48,9 +48,9 @@ void _frag(in vec4 fragCoord, out vec4 fragColor)
         minV = con ? err : minV;
     }
     
-    float bw = dis[B] / (dis[A] + dis[B]);
+    const float bw = dis[A] / (dis[A] + dis[B]);
     
-    fragColor = vec4(fract(bw * 255.0), floor(bw * 255.0) / 255.0, B / 255.0, A / 255.0);
+    fragColor = vec4(fract(bw * 255.0), bw, B / 255.0, A / 255.0);
 }
 
 #include "../shaderLib/templateEnd.frag.glsl"
