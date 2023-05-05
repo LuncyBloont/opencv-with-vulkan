@@ -19,12 +19,12 @@ void _frag(in vec4 fragCoord, out vec4 fragColor)
 
     uint A = uint(data.w * 255.0);
     uint B = uint(data.z * 255.0);
-    float w = (data.x + data.y * 255.0) / 255.0;
+    float w = data.x / 255.0 + data.y;
 
     const ivec2 apos = clamp(spos + ivec2(offsetX[A], offsetY[A]), ivec2(0), ivec2(_vecLib[1].xy));
     const ivec2 bpos = clamp(spos + ivec2(offsetX[B], offsetY[B]), ivec2(0), ivec2(_vecLib[1].xy));
 
-    fragColor = mix(texelFetch(_tex0, bpos, 0), texelFetch(_tex0, apos, 0), w);
+    fragColor = mix(texelFetch(_tex0, apos, 0), texelFetch(_tex0, bpos, 0), w);
 }
 
 #include "../shaderLib/templateEnd.frag.glsl"
