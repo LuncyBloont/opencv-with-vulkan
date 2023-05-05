@@ -3,7 +3,7 @@
 
 int main(int argc, char** args)
 {
-    std::string iname = MLTSG_PATH("/images/images/city.png");
+    std::string iname = MLTSG_PATH("/images/images/Cthulhu.jpg");
     std::string oname = "./bl_d.png";
 
     if (argc == 3)
@@ -22,27 +22,36 @@ int main(int argc, char** args)
             cv::resize(iImg, iImg, iImg.size() / 2);
         }
 
-        mltsg::GPUMat tex(&iImg, MLTSG_READ_MAT, false);
-        tex.apply();
+        float allDur = 0.0f;
 
-        mltsg::StageProperties assets{};
-        assets.uniVec = {glm::vec4(75.0f, 50.0f, 0.0f, 33.0f)};
-        assets.uniMat = {};
-        assets.shaderPath = MLTSG_PATH("/shaders/bilateralFiltering.spv");
-        assets.textures = {&tex};
+        for (int i = 0; i < 6; ++i)
+        {
+            mltsg::GPUMat tex(&iImg, MLTSG_READ_MAT, false);
+            tex.apply();
 
-        mltsg::Stage stage(tex.width(), tex.height(), &assets);
+            mltsg::StageProperties assets{};
+            assets.uniVec = {glm::vec4(75.0f, 50.0f, 0.0f, 33.0f)};
+            assets.uniMat = {};
+            assets.shaderPath = MLTSG_PATH("/shaders/bilateralFiltering.spv");
+            assets.textures = {&tex};
 
-        stage.render(1);
+            mltsg::Stage stage(tex.width(), tex.height(), &assets);
 
-        stage.getGPUMat()->apply();
+            stage.render(1);
 
-        cv::imwrite(oname, *stage.getGPUMat()->cpuData);
+            stage.getGPUMat()->apply();
 
-        std::cout << "bl time: " << stage.realFrameTime() << "ms/" << stage.treeFrameTime() << "ms" << std::endl;
-        std::cout << "bl other time: " << tex.applyTime << "ms" << std::endl;
+            cv::imwrite(oname, *stage.getGPUMat()->cpuData);
 
-        std::cerr << "Vulkan-GPU-GraphicsPipeline " << iname << " " << iImg.cols << "x" << iImg.rows << "x" << iImg.channels() << " " << stage.realFrameTime() + tex.applyTime << std::endl;
+            std::cout << "bl time: " << stage.realFrameTime() << "ms/" << stage.treeFrameTime() << "ms" << std::endl;
+            std::cout << "bl other time0: " << tex.applyTime << "ms" << std::endl;
+            std::cout << "bl other time1: " << stage.getGPUMat()->applyTime << "ms" << std::endl;
+
+            allDur += stage.realFrameTime() + tex.applyTime + stage.getGPUMat()->applyTime;
+        }
+
+        std::cerr << "Vulkan-GPU-GraphicsPipeline " << iname << " " << iImg.cols << "x" << iImg.rows << "x" << 
+            iImg.channels() << " " << allDur / 6 << std::endl;
     }
 
     mltsg::cleanupVulkan();

@@ -30,7 +30,7 @@ mltsg::GPUBuffer::GPUBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkBuffe
             break;
         case VK_BUFFER_USAGE_TRANSFER_DST_BIT:
             memory = gReadMemory.memoryAllocate(memoryRequirements, memoryRequirements.size, MLTSG_DEFAULT_TRANS_SIZE,
-                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_CACHED_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
             break;
         case VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT:
             memory = gUniformMemory.memoryAllocate(memoryRequirements, memoryRequirements.size, MLTSG_DEFAULT_U_MEM_SIZE,
