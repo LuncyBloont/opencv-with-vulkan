@@ -107,7 +107,7 @@ void test_multi_images()
             mltsg::Stage indexWeightStage{inputTex0.width(), inputTex0.height(), &calIndexWeightAssets};
 
             mltsg::StageProperties upsampleAssets{
-                    {}, {&postTex, indexWeightStage.getGPUMat()}, {},
+                    {&indexWeightStage}, {&postTex}, {},
                     {glm::vec4(inputTex0.width(), inputTex0.height(), downsample, 0.0f), glm::vec4(sWidth, sHeight, downsample / 2, 0.0f)},
                     MLTSG_PATH("/shaders/glu_upsample.spv")
                 };

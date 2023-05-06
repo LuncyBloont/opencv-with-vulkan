@@ -136,6 +136,18 @@ inline float markTimeX()
     return dur.count();
 }
 
+inline auto timeStart()
+{
+    return std::chrono::system_clock::now();
+}
+
+inline float timeEnd(const std::chrono::system_clock::time_point& beg)
+{
+    const auto now = std::chrono::system_clock::now();
+    const auto dur = std::chrono::duration<float, std::chrono::milliseconds::period>(now - beg);
+    return dur.count();
+}
+
 }
 
 #endif

@@ -162,7 +162,7 @@ void mltsg::Stage::render(uint32_t newAge)
     frameTime_all = timeSeg2 + timeSeg1;
     frameTime_self = timeSeg2;
     
-    MLTSG_LogDB("%s render complete at Age(\t%d\t)\n", tag.c_str(), newAge);
+    // MLTSG_LogDB("%s render complete at Age(\t%d\t)\n", tag.c_str(), newAge);
 }
 
 float mltsg::Stage::realFrameTime() const

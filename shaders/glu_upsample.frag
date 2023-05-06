@@ -4,6 +4,8 @@
 
 #include "../shaderLib/templateHead.frag.glsl"
 
+#define SHOW_FOR_OPENCV
+
 void _frag(in vec4 fragCoord, out vec4 fragColor)
 {
     const ivec2 spos = clamp(ivec2(fragCoord.xy * _vecLib[0].xy / _vecLib[0].z), ivec2(0), ivec2(_vecLib[1].xy) - 1);
@@ -15,7 +17,7 @@ void _frag(in vec4 fragCoord, out vec4 fragColor)
     const int offsetX[] = {-1, 0, 1, -1, 0, 1, -1, 0, 1};
     const int offsetY[] = {-1, -1, -1, 0, 0, 0, 1, 1, 1};
     
-    const vec4 data = texelFetch(_tex1, pos, 0);
+    const vec4 data = texelFetch(_ref0, pos, 0);
 
     uint A = uint(data.w * 255.0);
     uint B = uint(data.z * 255.0);
