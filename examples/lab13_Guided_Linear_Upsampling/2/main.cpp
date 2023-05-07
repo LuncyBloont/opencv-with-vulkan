@@ -18,7 +18,6 @@ int main(int argc, char** args)
         cv::Mat iImg = mltsg::imreadRGB(args[1], cv::IMREAD_UNCHANGED);
 
         mltsg::GPUMat iTex(&iImg, MLTSG_READ_MAT, false);
-        iTex.apply();
 
         const uint32_t sWidth = (iTex.width() + 8 - 1) / 8;
         const uint32_t sHeight = (iTex.height() + 8 - 1) / 8;
@@ -55,11 +54,16 @@ int main(int argc, char** args)
         mltsg::Stage upsampleStage{iTex.width(), iTex.height(), &upsampleAssets};
 
         auto k0 = mltsg::timeStart();
-        downsampleStage.render(1);
-        upsampleStage.render(1);
-        float kk = mltsg::timeEnd(k0);
+        for (int i = 0; i < 6; ++i)
+        {
+            iTex.apply();
 
-        upsampleStage.getGPUMat()->apply();
+            downsampleStage.render(1 + i);
+            upsampleStage.render(1 + i);
+
+            upsampleStage.getGPUMat()->apply();
+        }
+        float kk = mltsg::timeEnd(k0) / 6.0f;
 
         cv::imwrite(args[2], *upsampleStage.getGPUMat()->cpuData);
 
